@@ -64,6 +64,12 @@ export class EquinoxProvider extends BaseProvider {
               return el?.getAttribute(attr) || '';
             };
 
+            // Extract photos
+            const photoEls = card.querySelectorAll('img.class-image, .photo img, .gallery img, .thumbnail img');
+            const photos = Array.from(photoEls).map((img: any) =>
+              img.src || img.getAttribute('data-src') || img.getAttribute('data-lazy-src')
+            ).filter(url => url && url.startsWith('http'));
+
             return {
               name: getTextContent('.class-title, .class-name, h3, h4'),
               instructor: getTextContent('.instructor-name, .teacher, [data-instructor]'),
@@ -74,7 +80,15 @@ export class EquinoxProvider extends BaseProvider {
               location: getTextContent('.location, .studio'),
               level: getTextContent('.level, .intensity'),
               spotsAvailable: getTextContent('.spots, .availability'),
-              bookingLink: getAttribute('a.book-now, .booking-link', 'href')
+              bookingLink: getAttribute('a.book-now, .booking-link', 'href'),
+              // Enhanced fields
+              instructorBio: getTextContent('.instructor-bio, .trainer-bio'),
+              instructorPhoto: getAttribute('.instructor-photo img, .trainer-photo img', 'src'),
+              amenitiesText: getTextContent('.amenities, .facilities, .club-features'),
+              bookingStatus: getTextContent('.status, .booking-status'),
+              pricingInfo: getTextContent('.pricing, .membership-info'),
+              rating: getTextContent('.rating, .reviews, [data-rating]'),
+              photos: photos.slice(0, 5)
             };
           }, classCards[i]);
 
@@ -126,6 +140,27 @@ export class EquinoxProvider extends BaseProvider {
           // Determine capacity (Equinox classes typically have limited spots)
           const capacity = this.parseCapacity(classInfo.spotsAvailable) || 25;
 
+          // Parse enhanced fields
+          const realTimeAvailability = this.parseAvailability(classInfo.spotsAvailable);
+          const bookingStatus = this.parseBookingStatus(
+            classInfo.bookingStatus || classInfo.spotsAvailable || '',
+            realTimeAvailability
+          );
+          const amenities = classInfo.amenitiesText
+            ? this.parseAmenities(classInfo.amenitiesText)
+            : [
+                { type: 'locker', available: true },
+                { type: 'shower', available: true },
+                { type: 'equipment', available: true }
+              ]; // Default Equinox amenities
+          const trainerInfo = classInfo.instructorBio || classInfo.instructorPhoto
+            ? this.parseTrainerInfo(
+                sanitizeString(classInfo.instructor) || 'Staff',
+                classInfo.instructorBio ? sanitizeString(classInfo.instructorBio) : undefined,
+                classInfo.instructorPhoto || undefined
+              )
+            : undefined;
+
           // Create fitness class object
           const fitnessClass: FitnessClass = {
             name: sanitizeString(classInfo.name),
@@ -139,7 +174,17 @@ export class EquinoxProvider extends BaseProvider {
             providerId: `equinox-${locationName}-${datetime.getTime()}-${classInfo.name}`,
             providerName: this.name,
             capacity,
-            tags: parseTags(classInfo.name + ' ' + classInfo.description + ' ' + classInfo.level)
+            tags: parseTags(classInfo.name + ' ' + classInfo.description + ' ' + classInfo.level),
+            // Enhanced fields
+            photos: classInfo.photos.length > 0 ? classInfo.photos : undefined,
+            trainerInfo,
+            amenities,
+            realTimeAvailability,
+            bookingStatus,
+            lastAvailabilityCheck: new Date(),
+            pricingDetails: classInfo.pricingInfo
+              ? this.parsePricingDetails(classInfo.pricingInfo, 0)
+              : { membership: { monthly: 0, description: 'Included with membership' } }
           };
 
           // Validate and add

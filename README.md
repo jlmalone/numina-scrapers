@@ -13,6 +13,17 @@ TypeScript/Node.js service for scraping and aggregating fitness class data from 
 - **Geocoding**: Automatic address-to-coordinates conversion using OpenStreetMap
 - **Comprehensive Logging**: Winston-based logging with file and console outputs
 
+### Enhanced Data Extraction
+
+Scrapers now extract richer data beyond basic class information:
+
+- **📸 Class Photos**: Multiple images per class (up to 5)
+- **👤 Detailed Trainer Info**: Bios, certifications, experience, photos, and social links
+- **🏢 Facility Amenities**: Showers, lockers, parking, WiFi, childcare, equipment
+- **⏰ Real-Time Availability**: Current spots available, booking status, waitlist info
+- **💰 Pricing Details**: Drop-in prices, packages, intro offers, memberships
+- **⭐ Reviews**: User ratings and reviews (when available from provider sites)
+
 ## Status
 
 ✅ **Implemented** - Core scraping infrastructure with 3 provider adapters
@@ -251,25 +262,77 @@ npm run scrape -- --provider=yourprovider --max-results=10
 
 ## Data Model
 
+### Core FitnessClass Fields
+
 ```typescript
 interface FitnessClass {
-  name: string;              // Class name (e.g., "Hot Yoga", "Spin Class")
-  description: string;       // Full description
-  datetime: Date;            // Class start time
-  location: {
-    name: string;            // Venue name
-    address: string;         // Full address
-    lat: number;             // Latitude
-    long: number;            // Longitude
+  // Basic fields
+  name: string;                    // Class name (e.g., "Hot Yoga", "Spin Class")
+  description: string;             // Full description
+  datetime: Date;                  // Class start time
+  location: Location;              // Venue details with geocoded coordinates
+  trainer: string;                 // Instructor name (for backward compatibility)
+  intensity: number;               // 1-10 scale
+  price: number;                   // Price in dollars (for backward compatibility)
+  bookingUrl: string;              // URL to book the class
+  providerId: string;              // Unique ID from provider
+  providerName: string;            // Provider name
+  capacity: number;                // Max participants
+  tags: string[];                  // ["yoga", "hot", "beginner"]
+
+  // Enhanced fields
+  photos?: string[];               // Array of photo URLs (up to 5)
+  trainerInfo?: TrainerInfo;       // Detailed trainer information
+  amenities?: Amenity[];           // Facility amenities
+  realTimeAvailability?: number;   // Current spots available
+  bookingStatus?: 'open' | 'closed' | 'full' | 'waitlist';
+  lastAvailabilityCheck?: Date;    // Last time availability was checked
+  pricingDetails?: PricingDetails; // Detailed pricing options
+  reviews?: Review[];              // User reviews (if available)
+}
+
+interface TrainerInfo {
+  name: string;
+  bio?: string;
+  certifications?: string[];
+  yearsExperience?: number;
+  photoUrl?: string;
+  socialLinks?: {
+    instagram?: string;
+    twitter?: string;
+    facebook?: string;
+    website?: string;
   };
-  trainer: string;           // Instructor name
-  intensity: number;         // 1-10 scale
-  price: number;             // Price in dollars
-  bookingUrl: string;        // URL to book the class
-  providerId: string;        // Unique ID from provider
-  providerName: string;      // Provider name
-  capacity: number;          // Max participants
-  tags: string[];            // ["yoga", "hot", "beginner"]
+}
+
+interface Amenity {
+  type: string;                    // shower, locker, parking, wifi, childcare, equipment
+  available: boolean;
+  description?: string;
+}
+
+interface PricingDetails {
+  dropIn?: number;
+  packages?: Array<{
+    name: string;
+    price: number;
+    classes: number;
+  }>;
+  introOffer?: {
+    description: string;
+    price: number;
+  };
+  membership?: {
+    monthly: number;
+    description?: string;
+  };
+}
+
+interface Review {
+  rating: number;                  // 1-5
+  text?: string;
+  date: Date;
+  reviewerName?: string;
 }
 ```
 

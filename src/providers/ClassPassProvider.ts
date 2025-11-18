@@ -63,6 +63,12 @@ export class ClassPassProvider extends BaseProvider {
               return item.querySelector(selector)?.getAttribute(attr) || '';
             };
 
+            // Extract photos
+            const photoEls = item.querySelectorAll('img.venue-photo, img.class-photo, .photo img, .studio-image img');
+            const photos = Array.from(photoEls).map((img: any) =>
+              img.src || img.getAttribute('data-src') || img.getAttribute('data-lazy')
+            ).filter(url => url && url.startsWith('http'));
+
             return {
               className: getText('.class-name, h3, .title'),
               studioName: getText('.studio-name, .venue-name'),
@@ -75,7 +81,16 @@ export class ClassPassProvider extends BaseProvider {
               spotsLeft: getText('.spots-left, .availability'),
               address: getText('.address, .location-address'),
               bookingUrl: getAttr('a.book-button, .booking-link', 'href'),
-              difficulty: getText('.difficulty, .level')
+              difficulty: getText('.difficulty, .level'),
+              // Enhanced fields
+              instructorBio: getText('.instructor-bio, .teacher-bio'),
+              instructorPhoto: getAttr('.instructor-photo img, .teacher-photo img', 'src'),
+              amenitiesText: getText('.amenities, .venue-amenities, .facilities'),
+              bookingStatus: getText('.status, .booking-status, .availability-status'),
+              rating: getText('.rating, .venue-rating, [data-rating]'),
+              reviews: getText('.review-count, .reviews'),
+              pricingInfo: getText('.pricing-details, .membership-info'),
+              photos: photos.slice(0, 5)
             };
           }, classItems[i]);
 
@@ -128,6 +143,25 @@ export class ClassPassProvider extends BaseProvider {
           // Parse capacity
           const capacity = this.parseCapacity(classData.spotsLeft) || 20;
 
+          // Parse enhanced fields
+          const realTimeAvailability = this.parseAvailability(classData.spotsLeft);
+          const bookingStatus = this.parseBookingStatus(
+            classData.bookingStatus || classData.spotsLeft || '',
+            realTimeAvailability
+          );
+          const amenities = classData.amenitiesText ? this.parseAmenities(classData.amenitiesText) : undefined;
+          const trainerInfo = classData.instructorBio || classData.instructorPhoto
+            ? this.parseTrainerInfo(
+                sanitizeString(classData.instructor) || 'Instructor',
+                classData.instructorBio ? sanitizeString(classData.instructorBio) : undefined,
+                classData.instructorPhoto || undefined
+              )
+            : undefined;
+          const pricingDetails = this.parsePricingDetails(
+            classData.pricingInfo || `${classData.credits} credits`,
+            price
+          );
+
           // Create fitness class
           const fitnessClass: FitnessClass = {
             name: sanitizeString(classData.className),
@@ -143,7 +177,15 @@ export class ClassPassProvider extends BaseProvider {
             capacity,
             tags: parseTags(
               `${classData.className} ${classData.category} ${classData.description}`
-            )
+            ),
+            // Enhanced fields
+            photos: classData.photos.length > 0 ? classData.photos : undefined,
+            trainerInfo,
+            amenities,
+            realTimeAvailability,
+            bookingStatus,
+            lastAvailabilityCheck: new Date(),
+            pricingDetails
           };
 
           // Validate and add
@@ -189,22 +231,25 @@ export class ClassPassProvider extends BaseProvider {
    */
   private async autoScroll(page: any): Promise<void> {
     try {
-      await page.evaluate(async () => {
-        await new Promise<void>((resolve) => {
-          let totalHeight = 0;
-          const distance = 100;
-          const timer = setInterval(() => {
-            const scrollHeight = document.body.scrollHeight;
-            window.scrollBy(0, distance);
-            totalHeight += distance;
+      // Execute scroll in browser context
+      await page.evaluate(`
+        (async () => {
+          await new Promise((resolve) => {
+            let totalHeight = 0;
+            const distance = 100;
+            const timer = setInterval(() => {
+              const scrollHeight = document.body.scrollHeight;
+              window.scrollBy(0, distance);
+              totalHeight += distance;
 
-            if (totalHeight >= scrollHeight) {
-              clearInterval(timer);
-              resolve();
-            }
-          }, 100);
-        });
-      });
+              if (totalHeight >= scrollHeight) {
+                clearInterval(timer);
+                resolve();
+              }
+            }, 100);
+          });
+        })();
+      `);
 
       this.logProgress('Finished auto-scrolling to load content');
       await this.delay(2000); // Wait for content to load
