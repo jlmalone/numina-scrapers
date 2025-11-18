@@ -1,8 +1,28 @@
 # 🤖 CLAUDE CODE WEB AGENT PROMPT
 
-> **IMPORTANT**: Before starting, check if `.agent-completed` file exists in the root directory.
-> If it exists, respond: "✅ This task has already been completed. See README.md for details."
-> **When finished**, create `.agent-completed` file with timestamp and summary.
+**Version**: 1.0.0
+**Last Updated**: 2025-01-18
+
+---
+
+## ⚠️ IDEMPOTENCY CHECK - READ THIS FIRST ⚠️
+
+**BEFORE DOING ANYTHING ELSE**, you MUST check if this task has already been completed:
+
+1. **Check for `.agent-completed` file** in the project root directory
+2. **If the file exists**:
+   - Read its contents
+   - Verify the completion timestamp and status
+   - Respond with: "✅ This task has already been completed on [timestamp]. See README.md for details."
+   - **DO NOT** re-run the implementation
+   - **DO NOT** modify existing files
+   - Exit gracefully
+
+3. **If the file does NOT exist**:
+   - Proceed with the task implementation below
+   - When completely finished, create `.agent-completed` with completion details
+
+**Purpose**: This ensures the agent can be run multiple times without duplicating work.
 
 ---
 
@@ -167,11 +187,22 @@ numina-scrapers/
 
 3. **Create `.agent-completed` file** with content:
    ```
-   Completed: [timestamp]
+   AGENT_PROMPT_VERSION: 1.0.0
+   COMPLETED: [timestamp in ISO 8601 format]
+   STATUS: SUCCESS
+
    Summary: Numina scrapers implemented successfully
    Providers: [list of implemented providers]
-   Status: All acceptance criteria met
-   Next: See TODO.md
+   Acceptance Criteria: All met ✅
+
+   Files Created: [count]
+   Total Lines of Code: [approximate count]
+
+   Next Steps: See TODO.md for future enhancements
+
+   --- DO NOT DELETE THIS FILE ---
+   This file marks task completion for idempotency.
+   If you need to re-run the agent, delete this file first.
    ```
 
 4. **Commit and push** all changes with message:

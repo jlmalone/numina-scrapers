@@ -1,0 +1,39 @@
+{
+  "backendUrl": "http://localhost:3000",
+  "backendApiKey": "your-api-key-here",
+  "providers": {
+    "mindbody": {
+      "enabled": true,
+      "baseUrl": "https://clients.mindbodyonline.com/classic/ws",
+      "defaultLocation": "New York, NY",
+      "rateLimit": 10
+    },
+    "equinox": {
+      "enabled": true,
+      "baseUrl": "https://www.equinox.com",
+      "defaultLocation": "new-york-ny",
+      "rateLimit": 15
+    },
+    "classpass": {
+      "enabled": true,
+      "baseUrl": "https://classpass.com",
+      "defaultLocation": "new-york-ny",
+      "rateLimit": 20
+    }
+  },
+  "scraping": {
+    "headless": true,
+    "timeout": 30000,
+    "maxRetries": 3,
+    "delayBetweenRequests": 1000
+  },
+  "geocoding": {
+    "cacheEnabled": true,
+    "cacheExpiry": 86400000
+  },
+  "scheduling": {
+    "enabled": false,
+    "defaultSchedule": "0 2 * * *",
+    "timezone": "America/New_York"
+  }
+}
