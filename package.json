@@ -1,0 +1,49 @@
+{
+  "name": "numina-scrapers",
+  "version": "1.0.0",
+  "description": "TypeScript/Node.js service for scraping group fitness class data from various providers",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "scrape": "tsx src/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "scraper",
+    "fitness",
+    "classes",
+    "puppeteer",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "commander": "^12.0.0",
+    "node-cron": "^3.0.3",
+    "puppeteer": "^23.0.0",
+    "winston": "^3.14.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^22.0.0",
+    "@types/node-cron": "^3.0.11",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.5",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}
