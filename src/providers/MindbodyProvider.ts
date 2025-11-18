@@ -64,6 +64,21 @@ export class MindbodyProvider extends BaseProvider {
             const capacityEl = el.querySelector('.capacity, .spots');
             const linkEl = el.querySelector('a[href*="book"], a[href*="class"]');
 
+            // Enhanced data extraction
+            const availabilityEl = el.querySelector('.availability, .spots-left, [data-availability]');
+            const statusEl = el.querySelector('.status, .booking-status');
+            const amenitiesEl = el.querySelector('.amenities, .facilities');
+            const trainerBioEl = el.querySelector('.trainer-bio, .instructor-bio');
+            const trainerPhotoEl = el.querySelector('.trainer-photo img, .instructor-photo img');
+            const pricingInfoEl = el.querySelector('.pricing-info, .price-details');
+            const reviewEl = el.querySelector('.rating, .reviews');
+
+            // Extract photo URLs from class images
+            const photoEls = el.querySelectorAll('img.class-photo, img.class-image, .photo img, .gallery img');
+            const photos = Array.from(photoEls).map((img: any) =>
+              img.src || img.getAttribute('data-src')
+            ).filter(url => url && url.startsWith('http'));
+
             return {
               name: nameEl?.textContent?.trim() || '',
               time: timeEl?.textContent?.trim() || '',
@@ -73,7 +88,16 @@ export class MindbodyProvider extends BaseProvider {
               price: priceEl?.textContent?.trim() || '0',
               locationName: locationEl?.textContent?.trim() || '',
               capacity: capacityEl?.textContent?.trim() || '0',
-              bookingUrl: linkEl?.getAttribute('href') || ''
+              bookingUrl: linkEl?.getAttribute('href') || '',
+              // Enhanced fields
+              availability: availabilityEl?.textContent?.trim() || '',
+              status: statusEl?.textContent?.trim() || '',
+              amenities: amenitiesEl?.textContent?.trim() || '',
+              trainerBio: trainerBioEl?.textContent?.trim() || '',
+              trainerPhoto: trainerPhotoEl?.src || '',
+              pricingInfo: pricingInfoEl?.textContent?.trim() || '',
+              rating: reviewEl?.textContent?.trim() || '',
+              photos: photos.slice(0, 5) // Limit to 5 photos
             };
           }, classElements[i]);
 
@@ -109,6 +133,21 @@ export class MindbodyProvider extends BaseProvider {
                 long: 0
               };
 
+          // Parse enhanced fields
+          const realTimeAvailability = this.parseAvailability(classData.availability || classData.capacity);
+          const bookingStatus = this.parseBookingStatus(classData.status || classData.availability, realTimeAvailability);
+          const amenities = classData.amenities ? this.parseAmenities(classData.amenities) : undefined;
+          const trainerInfo = classData.trainerBio || classData.trainerPhoto
+            ? this.parseTrainerInfo(
+                sanitizeString(classData.trainer),
+                classData.trainerBio ? sanitizeString(classData.trainerBio) : undefined,
+                classData.trainerPhoto || undefined
+              )
+            : undefined;
+          const pricingDetails = classData.pricingInfo
+            ? this.parsePricingDetails(classData.pricingInfo, this.parsePrice(classData.price))
+            : undefined;
+
           // Create FitnessClass object
           const fitnessClass: FitnessClass = {
             name: sanitizeString(classData.name),
@@ -122,7 +161,15 @@ export class MindbodyProvider extends BaseProvider {
             providerId: `mindbody-${datetime.getTime()}-${classData.name}`,
             providerName: this.name,
             capacity: this.parseCapacity(classData.capacity),
-            tags: parseTags(classData.name + ' ' + classData.description)
+            tags: parseTags(classData.name + ' ' + classData.description),
+            // Enhanced fields
+            photos: classData.photos.length > 0 ? classData.photos : undefined,
+            trainerInfo,
+            amenities,
+            realTimeAvailability,
+            bookingStatus,
+            lastAvailabilityCheck: new Date(),
+            pricingDetails
           };
 
           // Validate and add

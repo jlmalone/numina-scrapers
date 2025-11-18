@@ -120,7 +120,7 @@ export class BackendClient {
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
-      const responseData = await response.json();
+      const responseData = await response.json() as any;
 
       // Assume backend returns { success: true, uploaded: number }
       result.uploaded = responseData.uploaded ?? classes.length;
@@ -229,7 +229,7 @@ export class BackendClient {
         return false;
       }
 
-      const data = await response.json();
+      const data = await response.json() as any;
       return data.exists === true;
     } catch (error) {
       logger.error('Error checking class existence:', error);

@@ -1,4 +1,4 @@
-import { FitnessClass, ScrapeOptions, ScrapeResult } from '../models/FitnessClass.js';
+import { FitnessClass, ScrapeOptions, ScrapeResult, TrainerInfo, Amenity, Review, PricingDetails } from '../models/FitnessClass.js';
 import { ChromeManager } from '../core/ChromeManager.js';
 import { logger } from '../utils/logger.js';
 import { validateFitnessClass } from '../utils/validation.js';
@@ -208,6 +208,172 @@ export abstract class BaseProvider {
     }
 
     return filtered;
+  }
+
+  /**
+   * Extract availability from text (e.g., "5 spots left" -> 5)
+   */
+  protected parseAvailability(text: string): number | undefined {
+    try {
+      const match = text.match(/(\d+)\s*(?:spots?|spaces?)\s*(?:left|available|remaining)/i);
+      if (match) {
+        return parseInt(match[1]);
+      }
+      // Look for "15/20" format and calculate available spots
+      const capacityMatch = text.match(/(\d+)\s*\/\s*(\d+)/);
+      if (capacityMatch) {
+        const taken = parseInt(capacityMatch[1]);
+        const total = parseInt(capacityMatch[2]);
+        return total - taken;
+      }
+      return undefined;
+    } catch (error) {
+      return undefined;
+    }
+  }
+
+  /**
+   * Determine booking status from availability or text
+   */
+  protected parseBookingStatus(text: string, availability?: number): 'open' | 'closed' | 'full' | 'waitlist' | undefined {
+    const lowerText = text.toLowerCase();
+
+    if (lowerText.includes('full') || lowerText.includes('sold out')) {
+      return 'full';
+    }
+    if (lowerText.includes('waitlist') || lowerText.includes('wait list')) {
+      return 'waitlist';
+    }
+    if (lowerText.includes('closed') || lowerText.includes('cancelled')) {
+      return 'closed';
+    }
+    if (availability !== undefined) {
+      if (availability === 0) {
+        return 'full';
+      }
+      return 'open';
+    }
+    if (lowerText.includes('book') || lowerText.includes('available') || lowerText.includes('spots')) {
+      return 'open';
+    }
+    return undefined;
+  }
+
+  /**
+   * Parse trainer info from text and links
+   */
+  protected parseTrainerInfo(name: string, bio?: string, photoUrl?: string): TrainerInfo {
+    return {
+      name,
+      bio,
+      photoUrl
+    };
+  }
+
+  /**
+   * Parse amenities from text or structured data
+   */
+  protected parseAmenities(text: string): Amenity[] {
+    const amenities: Amenity[] = [];
+    const lowerText = text.toLowerCase();
+
+    const amenityTypes = [
+      { type: 'shower', keywords: ['shower', 'showers'] },
+      { type: 'locker', keywords: ['locker', 'lockers', 'locker room'] },
+      { type: 'parking', keywords: ['parking', 'garage', 'valet'] },
+      { type: 'wifi', keywords: ['wifi', 'wi-fi', 'wireless'] },
+      { type: 'childcare', keywords: ['childcare', 'kids', 'child care', 'daycare'] },
+      { type: 'equipment', keywords: ['equipment', 'gear', 'mat', 'towel'] }
+    ];
+
+    for (const { type, keywords } of amenityTypes) {
+      for (const keyword of keywords) {
+        if (lowerText.includes(keyword)) {
+          amenities.push({ type, available: true });
+          break;
+        }
+      }
+    }
+
+    return amenities;
+  }
+
+  /**
+   * Parse pricing details from text
+   */
+  protected parsePricingDetails(text: string, dropInPrice?: number): PricingDetails | undefined {
+    const details: PricingDetails = {};
+
+    if (dropInPrice) {
+      details.dropIn = dropInPrice;
+    }
+
+    // Look for package pricing (e.g., "5 classes for $75")
+    const packageMatch = text.match(/(\d+)\s*classes?\s*for\s*\$(\d+(?:\.\d{2})?)/i);
+    if (packageMatch) {
+      details.packages = [{
+        name: `${packageMatch[1]} classes`,
+        classes: parseInt(packageMatch[1]),
+        price: parseFloat(packageMatch[2])
+      }];
+    }
+
+    // Look for intro offers
+    const introMatch = text.match(/intro[^$]*\$(\d+(?:\.\d{2})?)/i);
+    if (introMatch) {
+      details.introOffer = {
+        description: 'Intro offer',
+        price: parseFloat(introMatch[1])
+      };
+    }
+
+    // Look for membership pricing
+    const membershipMatch = text.match(/membership[^$]*\$(\d+(?:\.\d{2})?)\s*\/?\s*mo(?:nth)?/i);
+    if (membershipMatch) {
+      details.membership = {
+        monthly: parseFloat(membershipMatch[1])
+      };
+    }
+
+    return Object.keys(details).length > 0 ? details : undefined;
+  }
+
+  /**
+   * Parse reviews from structured data
+   */
+  protected parseReview(rating: number, text?: string, date?: Date, reviewerName?: string): Review {
+    return {
+      rating,
+      text,
+      date: date || new Date(),
+      reviewerName
+    };
+  }
+
+  /**
+   * Extract photo URLs from page
+   */
+  protected async extractPhotoUrls(page: any, selectors: string[], maxPhotos: number = 5): Promise<string[]> {
+    const photos: string[] = [];
+
+    for (const selector of selectors) {
+      try {
+        const urls = await page.$$eval(selector, (imgs: any[]) =>
+          imgs.map((img: any) => img.src || img.getAttribute('data-src') || img.style.backgroundImage?.match(/url\(['"]?([^'"]+)['"]?\)/)?.[1])
+            .filter((url: string) => url && url.startsWith('http'))
+        );
+
+        photos.push(...urls);
+
+        if (photos.length >= maxPhotos) {
+          break;
+        }
+      } catch (error) {
+        // Selector not found, continue
+      }
+    }
+
+    return [...new Set(photos)].slice(0, maxPhotos); // Remove duplicates and limit
   }
 }
 

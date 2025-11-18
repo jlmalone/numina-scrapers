@@ -99,6 +99,14 @@ export class DatabaseManager {
         tags TEXT,
         uploaded_to_backend BOOLEAN DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        photos TEXT,
+        trainer_info TEXT,
+        amenities TEXT,
+        real_time_availability INTEGER,
+        booking_status TEXT CHECK(booking_status IN ('open', 'closed', 'full', 'waitlist')),
+        last_availability_check DATETIME,
+        pricing_details TEXT,
+        reviews TEXT,
         FOREIGN KEY (scrape_run_id) REFERENCES scrape_runs(id)
       )
     `);
@@ -111,7 +119,72 @@ export class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_scraped_classes_datetime ON scraped_classes(datetime);
       CREATE INDEX IF NOT EXISTS idx_scraped_classes_provider ON scraped_classes(provider_name);
       CREATE INDEX IF NOT EXISTS idx_scraped_classes_uploaded ON scraped_classes(uploaded_to_backend);
+      CREATE INDEX IF NOT EXISTS idx_scraped_classes_booking_status ON scraped_classes(booking_status);
     `);
+
+    // Run migrations for enhanced data fields
+    this.runMigrations();
+  }
+
+  private runMigrations(): void {
+    // Check if we need to add the enhanced data columns to existing tables
+    const tableInfo = this.db.prepare("PRAGMA table_info(scraped_classes)").all() as any[];
+    const columnNames = tableInfo.map(col => col.name);
+
+    // Add photos column if it doesn't exist
+    if (!columnNames.includes('photos')) {
+      this.db.exec('ALTER TABLE scraped_classes ADD COLUMN photos TEXT');
+      logger.info('Added photos column to scraped_classes table');
+    }
+
+    // Add trainer_info column if it doesn't exist
+    if (!columnNames.includes('trainer_info')) {
+      this.db.exec('ALTER TABLE scraped_classes ADD COLUMN trainer_info TEXT');
+      logger.info('Added trainer_info column to scraped_classes table');
+    }
+
+    // Add amenities column if it doesn't exist
+    if (!columnNames.includes('amenities')) {
+      this.db.exec('ALTER TABLE scraped_classes ADD COLUMN amenities TEXT');
+      logger.info('Added amenities column to scraped_classes table');
+    }
+
+    // Add real_time_availability column if it doesn't exist
+    if (!columnNames.includes('real_time_availability')) {
+      this.db.exec('ALTER TABLE scraped_classes ADD COLUMN real_time_availability INTEGER');
+      logger.info('Added real_time_availability column to scraped_classes table');
+    }
+
+    // Add booking_status column if it doesn't exist
+    if (!columnNames.includes('booking_status')) {
+      this.db.exec("ALTER TABLE scraped_classes ADD COLUMN booking_status TEXT CHECK(booking_status IN ('open', 'closed', 'full', 'waitlist'))");
+      logger.info('Added booking_status column to scraped_classes table');
+    }
+
+    // Add last_availability_check column if it doesn't exist
+    if (!columnNames.includes('last_availability_check')) {
+      this.db.exec('ALTER TABLE scraped_classes ADD COLUMN last_availability_check DATETIME');
+      logger.info('Added last_availability_check column to scraped_classes table');
+    }
+
+    // Add pricing_details column if it doesn't exist
+    if (!columnNames.includes('pricing_details')) {
+      this.db.exec('ALTER TABLE scraped_classes ADD COLUMN pricing_details TEXT');
+      logger.info('Added pricing_details column to scraped_classes table');
+    }
+
+    // Add reviews column if it doesn't exist
+    if (!columnNames.includes('reviews')) {
+      this.db.exec('ALTER TABLE scraped_classes ADD COLUMN reviews TEXT');
+      logger.info('Added reviews column to scraped_classes table');
+    }
+
+    // Add index for booking_status if it doesn't exist
+    try {
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_scraped_classes_booking_status ON scraped_classes(booking_status)');
+    } catch (error) {
+      // Index might already exist, ignore error
+    }
   }
 
   // Provider operations
@@ -246,8 +319,10 @@ export class DatabaseManager {
       INSERT INTO scraped_classes (
         scrape_run_id, name, description, datetime, location_name, location_address,
         location_lat, location_long, trainer, intensity, price, booking_url,
-        provider_id, provider_name, capacity, tags, uploaded_to_backend
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+        provider_id, provider_name, capacity, tags, uploaded_to_backend,
+        photos, trainer_info, amenities, real_time_availability, booking_status,
+        last_availability_check, pricing_details, reviews
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -266,7 +341,15 @@ export class DatabaseManager {
       fitnessClass.providerId,
       fitnessClass.providerName,
       fitnessClass.capacity,
-      JSON.stringify(fitnessClass.tags)
+      JSON.stringify(fitnessClass.tags),
+      fitnessClass.photos ? JSON.stringify(fitnessClass.photos) : null,
+      fitnessClass.trainerInfo ? JSON.stringify(fitnessClass.trainerInfo) : null,
+      fitnessClass.amenities ? JSON.stringify(fitnessClass.amenities) : null,
+      fitnessClass.realTimeAvailability !== undefined ? fitnessClass.realTimeAvailability : null,
+      fitnessClass.bookingStatus || null,
+      fitnessClass.lastAvailabilityCheck ? fitnessClass.lastAvailabilityCheck.toISOString() : null,
+      fitnessClass.pricingDetails ? JSON.stringify(fitnessClass.pricingDetails) : null,
+      fitnessClass.reviews ? JSON.stringify(fitnessClass.reviews) : null
     );
 
     return result.lastInsertRowid as number;
@@ -318,7 +401,16 @@ export class DatabaseManager {
       capacity: row.capacity,
       tags: JSON.parse(row.tags),
       uploadedToBackend: Boolean(row.uploaded_to_backend),
-      createdAt: row.created_at
+      createdAt: row.created_at,
+      // Enhanced fields
+      photos: row.photos ? JSON.parse(row.photos) : undefined,
+      trainerInfo: row.trainer_info ? JSON.parse(row.trainer_info) : undefined,
+      amenities: row.amenities ? JSON.parse(row.amenities) : undefined,
+      realTimeAvailability: row.real_time_availability !== null ? row.real_time_availability : undefined,
+      bookingStatus: row.booking_status || undefined,
+      lastAvailabilityCheck: row.last_availability_check ? new Date(row.last_availability_check) : undefined,
+      pricingDetails: row.pricing_details ? JSON.parse(row.pricing_details) : undefined,
+      reviews: row.reviews ? JSON.parse(row.reviews) : undefined
     };
   }
 
