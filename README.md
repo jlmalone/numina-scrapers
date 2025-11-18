@@ -15,7 +15,7 @@ TypeScript/Node.js service for scraping and aggregating fitness class data from 
 
 ## Status
 
-✅ **Implemented** - Core scraping infrastructure with 3 provider adapters
+✅ **Implemented** - Core scraping infrastructure with 8 provider adapters
 
 ## Quick Start
 
@@ -56,15 +56,19 @@ Edit `config/providers.json`:
 ```bash
 # Scrape from a specific provider
 npm run scrape -- --provider=mindbody
+npm run scrape -- --provider=soulcycle
+npm run scrape -- --provider=orangetheory
 
 # Scrape from all enabled providers
 npm run scrape -- --provider=all
 
 # Scrape with filters
 npm run scrape -- --provider=equinox --location="new-york" --max-results=100
+npm run scrape -- --provider=barrys --location="los-angeles" --max-results=50
 
 # Scrape with date range
 npm run scrape -- --provider=classpass --start-date=2024-01-01 --end-date=2024-01-31
+npm run scrape -- --provider=f45 --start-date=2024-01-01 --end-date=2024-01-31
 
 # Start scheduled scraping (runs daily at 2am by default)
 npm run scrape -- schedule
@@ -103,6 +107,11 @@ npm run scrape -- upload
 │  │  MindbodyProvider    │  │
 │  │  EquinoxProvider     │  │
 │  │  ClassPassProvider   │  │
+│  │  SoulCycleProvider   │  │
+│  │  BarrysProvider      │  │
+│  │  OrangetheoryProvider│  │
+│  │  CorePowerYogaProvider│ │
+│  │  F45Provider         │  │
 │  └──────────────────────┘  │
 └────────────────────────────┘
 ```
@@ -122,6 +131,46 @@ npm run scrape -- upload
 3. **ClassPass** (`ClassPassProvider`)
    - Multi-studio subscription service
    - Aggregates classes from various boutique fitness studios
+
+4. **SoulCycle** (`SoulCycleProvider`)
+   - Premium indoor cycling studio chain
+   - Focuses on high-energy spin classes with motivating instructors
+
+5. **Barry's Bootcamp** (`BarrysProvider`)
+   - High-intensity interval training combining treadmill and strength work
+   - Known for full-body workouts and experienced trainers
+
+6. **Orangetheory Fitness** (`OrangetheoryProvider`)
+   - Heart rate-based interval training with 5 heart rate zones
+   - Uses treadmills, rowing machines, and strength equipment
+
+7. **CorePower Yoga** (`CorePowerYogaProvider`)
+   - Modern yoga studio chain with various styles (C1, C2, Yoga Sculpt, Hot)
+   - Combines traditional yoga with fitness and strength training
+
+8. **F45 Training** (`F45Provider`)
+   - Functional training with daily varied 45-minute workouts
+   - Team-based circuit training with cardio, resistance, and hybrid classes
+
+### Provider Comparison Table
+
+| Provider | Type | Coverage | Intensity Range | Pricing Model | Data Quality | Special Requirements |
+|----------|------|----------|-----------------|---------------|--------------|---------------------|
+| **Mindbody** | Platform | Nationwide | Varies | Per-class/Membership | High | Location codes |
+| **Equinox** | Premium Gym | 100+ locations | 4-9 | Membership | High | Location-specific URLs |
+| **ClassPass** | Aggregator | Nationwide | Varies | Credits | High | Authentication |
+| **SoulCycle** | Cycling | 90+ studios | 8 | Per-class ($36) | High | Studio-specific schedules |
+| **Barry's** | HIIT | 80+ studios | 9 | Per-class ($38) | High | Workout type filtering |
+| **Orangetheory** | HIIT | 1,500+ studios | 8 | Membership | High | Studio-specific schedules |
+| **CorePower Yoga** | Yoga | 200+ studios | 4-7 | Per-class/Membership | High | Temperature/level info |
+| **F45 Training** | Functional | 4,000+ studios | 7-9 | Membership | High | Daily workout names |
+
+### Coverage Notes
+
+- **High Coverage**: Mindbody (platform), Orangetheory (1,500+ studios), F45 (4,000+ studios)
+- **Regional Focus**: SoulCycle, Barry's (major metropolitan areas)
+- **Premium Market**: Equinox, SoulCycle, Barry's
+- **Budget-Friendly**: CorePower Yoga, Orangetheory (membership-based)
 
 ### How Providers Work
 
@@ -393,7 +442,12 @@ numina-scrapers/
 │   │   ├── BaseProvider.ts      # Base class for all providers
 │   │   ├── MindbodyProvider.ts
 │   │   ├── EquinoxProvider.ts
-│   │   └── ClassPassProvider.ts
+│   │   ├── ClassPassProvider.ts
+│   │   ├── SoulCycleProvider.ts
+│   │   ├── BarrysProvider.ts
+│   │   ├── OrangetheoryProvider.ts
+│   │   ├── CorePowerYogaProvider.ts
+│   │   └── F45Provider.ts
 │   ├── core/                    # Core services
 │   │   ├── ChromeManager.ts     # Puppeteer management
 │   │   ├── Database.ts          # SQLite operations
@@ -416,13 +470,16 @@ numina-scrapers/
 
 ## Future Providers (See TODO.md)
 
-- 24 Hour Fitness
+Want to add more providers? Check out [TODO.md](TODO.md) for our roadmap of 10+ additional providers including:
+
 - Planet Fitness
 - LA Fitness
-- SoulCycle
-- Barry's Bootcamp
-- Peloton Studios
-- And 10+ more...
+- 24 Hour Fitness
+- Crunch Fitness
+- Pure Barre
+- CycleBar
+- Title Boxing Club
+- And many more...
 
 ## License
 

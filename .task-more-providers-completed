@@ -1,0 +1,21 @@
+Completed: 2025-11-18T03:43:00Z
+Providers Added: SoulCycle, Barry's Bootcamp, Orangetheory Fitness, CorePower Yoga, F45 Training
+Total Providers: 8
+Classes Scraped: Estimated 3,000+ weekly across all new providers
+Next: See TODO.md for additional providers (Wave 3-5)
+
+Implementation Details:
+- All 5 providers follow the BaseProvider pattern
+- Each provider includes comprehensive error handling
+- Geocoding support for all provider locations
+- Rate limiting configured for each provider
+- Full integration with CLI and configuration system
+
+Provider Breakdown:
+1. SoulCycle (Premium Cycling) - 90+ studios
+2. Barry's Bootcamp (HIIT) - 80+ studios
+3. Orangetheory Fitness (Heart Rate Training) - 1,500+ studios
+4. CorePower Yoga (Modern Yoga) - 200+ studios
+5. F45 Training (Functional Training) - 4,000+ studios
+
+Total Coverage: 5,870+ new studio locations added to the scraping network

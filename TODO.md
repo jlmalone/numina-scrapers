@@ -1,44 +1,68 @@
 # TODO - Numina Scrapers
 
+## Recently Completed (Wave 2)
+
+✅ **SoulCycle** - Premium indoor cycling (90+ studios)
+✅ **Barry's Bootcamp** - High-intensity interval training (80+ studios)
+✅ **Orangetheory Fitness** - Heart rate-based training (1,500+ studios)
+✅ **CorePower Yoga** - Modern yoga studios (200+ studios)
+✅ **F45 Training** - Functional training (4,000+ studios)
+
+**Current Provider Count: 8 providers**
+
+---
+
 ## Priority: High
 
-### Additional Provider Implementations
+### Additional Provider Implementations (Wave 3)
 
-1. **24 Hour Fitness** (Priority: High)
-   - Large national gym chain
-   - Offers group fitness classes at all locations
-   - Website: https://www.24hourfitness.com
-   - Implementation effort: Medium
-   - Expected classes: 1000s weekly
-
-2. **Planet Fitness** (Priority: High)
+1. **Planet Fitness** (Priority: High)
    - Massive chain with 2000+ locations
    - Focus on circuit training and basic fitness classes
    - Website: https://www.planetfitness.com
    - Implementation effort: Medium
    - Expected classes: 500+ weekly
 
-3. **LA Fitness** (Priority: High)
+2. **LA Fitness** (Priority: High)
    - National chain with extensive group fitness programs
    - Website: https://www.lafitness.com
    - Implementation effort: Medium
    - Expected classes: 1500+ weekly
 
+3. **24 Hour Fitness** (Priority: High)
+   - Large national gym chain
+   - Offers group fitness classes at all locations
+   - Website: https://www.24hourfitness.com
+   - Implementation effort: Medium
+   - Expected classes: 1000s weekly
+
+4. **Crunch Fitness** (Priority: High)
+   - National gym chain with unique classes
+   - Website: https://www.crunch.com
+   - Implementation effort: Medium
+   - Expected classes: 400+ weekly
+
+5. **Pure Barre** (Priority: High)
+   - Barre fitness studios
+   - Website: https://www.purebarre.com
+   - Implementation effort: Low
+   - Expected classes: 300+ weekly
+
 ### Core Enhancements
 
-4. **Geocoding Cache**
+6. **Geocoding Cache**
    - Implement SQLite-based geocoding cache
    - Reduce API calls for repeated addresses
    - Add cache expiry logic (30 days)
    - Estimated time: 4 hours
 
-5. **Rate Limiting Improvements**
+7. **Rate Limiting Improvements**
    - Add exponential backoff for failed requests
    - Implement per-provider rate limiting
    - Add request queue system
    - Estimated time: 6 hours
 
-6. **Error Recovery**
+8. **Error Recovery**
    - Automatic retry logic for failed scrapes
    - Save partial results on failure
    - Resume from last successful page
@@ -46,78 +70,84 @@
 
 ## Priority: Medium
 
-### Boutique Fitness Providers
+### Boutique Fitness Providers (Wave 4)
 
-7. **SoulCycle** (Priority: Medium)
-   - Premium indoor cycling studio chain
-   - Website: https://www.soul-cycle.com
+9. **CycleBar** (Priority: Medium)
+   - Premium indoor cycling chain
+   - Website: https://www.cyclebar.com
    - Implementation effort: Low
-   - Expected classes: 200+ weekly
+   - Expected classes: 400+ weekly
 
-8. **Barry's Bootcamp** (Priority: Medium)
-   - High-intensity interval training studios
-   - Website: https://www.barrysbootcamp.com
-   - Implementation effort: Low
-   - Expected classes: 150+ weekly
+10. **Club Pilates** (Priority: Medium)
+    - Reformer-based Pilates studios
+    - Website: https://www.clubpilates.com
+    - Implementation effort: Low
+    - Expected classes: 600+ weekly
 
-9. **CorePower Yoga** (Priority: Medium)
-   - Large yoga studio chain
-   - Website: https://www.corepoweryoga.com
-   - Implementation effort: Low
-   - Expected classes: 500+ weekly
-
-10. **Orangetheory Fitness** (Priority: Medium)
-    - Science-based interval training
-    - Website: https://www.orangetheory.com
-    - Implementation effort: Medium
-    - Expected classes: 800+ weekly
-
-11. **Pure Barre** (Priority: Medium)
-    - Barre fitness studios
-    - Website: https://www.purebarre.com
+11. **YogaWorks** (Priority: Medium)
+    - Traditional yoga studio chain
+    - Website: https://www.yogaworks.com
     - Implementation effort: Low
     - Expected classes: 300+ weekly
 
+12. **Title Boxing Club** (Priority: Medium)
+    - Boxing and kickboxing fitness studios
+    - Website: https://titleboxingclub.com
+    - Implementation effort: Low
+    - Expected classes: 250+ weekly
+
+13. **Rumble Boxing** (Priority: Medium)
+    - Boutique boxing studios
+    - Website: https://www.rumbleboxinggym.com
+    - Implementation effort: Low
+    - Expected classes: 150+ weekly
+
 ### Platform Integrations
 
-12. **Gympass** (Priority: Medium)
+14. **Gympass** (Priority: Medium)
     - Corporate wellness platform
     - Aggregates multiple studios
     - Website: https://www.gympass.com
     - Implementation effort: High (may require authentication)
     - Expected classes: 5000+ weekly
 
-13. **Peerfit** (Priority: Medium)
+15. **Peerfit** (Priority: Medium)
     - Corporate fitness platform
     - Website: https://www.peerfit.com
     - Implementation effort: High
     - Expected classes: 2000+ weekly
 
-### Regional/Specialty Providers
+### Regional/Specialty Providers (Wave 5)
 
-14. **Peloton Studios** (Priority: Medium)
+16. **Peloton Studios** (Priority: Medium)
     - In-person classes at Peloton locations
     - Website: https://www.onepeloton.com/studio
     - Implementation effort: Low
     - Expected classes: 100+ weekly
 
-15. **Crunch Fitness** (Priority: Medium)
-    - National gym chain with unique classes
-    - Website: https://www.crunch.com
-    - Implementation effort: Medium
-    - Expected classes: 400+ weekly
-
-16. **Gold's Gym** (Priority: Medium)
+17. **Gold's Gym** (Priority: Medium)
     - Classic gym chain
     - Website: https://www.goldsgym.com
     - Implementation effort: Medium
     - Expected classes: 600+ weekly
 
-17. **Lifetime Fitness** (Priority: Low)
+18. **Lifetime Fitness** (Priority: Medium)
     - Premium fitness clubs
     - Website: https://www.lifetime.life
     - Implementation effort: Medium
     - Expected classes: 800+ weekly
+
+19. **Anytime Fitness** (Priority: Medium)
+    - 24/7 gym chain with group classes
+    - Website: https://www.anytimefitness.com
+    - Implementation effort: Medium
+    - Expected classes: 500+ weekly
+
+20. **Snap Fitness** (Priority: Low)
+    - 24/7 compact fitness centers
+    - Website: https://www.snapfitness.com
+    - Implementation effort: Low
+    - Expected classes: 200+ weekly
 
 ## Features & Improvements
 
@@ -270,17 +300,16 @@
 
 The following providers need research to determine scrapability:
 
-- F45 Training
-- Title Boxing Club
-- CycleBar
-- Club Pilates
-- YogaWorks
-- Xponential Fitness brands
-- Anytime Fitness
-- Snap Fitness
+- Xponential Fitness brands (StretchLab, AKT, etc.)
 - Flywheel Sports
 - Row House
-- Rumble Boxing
+- Solidcore
+- Blink Fitness
+- Retro Fitness
+- YouFit Health Clubs
+- UFC Gym
+- Workout Anytime
+- Powerhouse Gym
 
 ## Infrastructure Improvements
 

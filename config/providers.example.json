@@ -19,6 +19,36 @@
       "baseUrl": "https://classpass.com",
       "defaultLocation": "new-york-ny",
       "rateLimit": 20
+    },
+    "soulcycle": {
+      "enabled": true,
+      "baseUrl": "https://www.soulcycle.com",
+      "defaultLocation": "new-york-ny",
+      "rateLimit": 15
+    },
+    "barrys": {
+      "enabled": true,
+      "baseUrl": "https://www.barrys.com",
+      "defaultLocation": "new-york-ny",
+      "rateLimit": 15
+    },
+    "orangetheory": {
+      "enabled": true,
+      "baseUrl": "https://www.orangetheory.com",
+      "defaultLocation": "new-york-ny",
+      "rateLimit": 15
+    },
+    "corepoweryoga": {
+      "enabled": true,
+      "baseUrl": "https://www.corepoweryoga.com",
+      "defaultLocation": "new-york-ny",
+      "rateLimit": 15
+    },
+    "f45": {
+      "enabled": true,
+      "baseUrl": "https://f45training.com",
+      "defaultLocation": "new-york-ny",
+      "rateLimit": 15
     }
   },
   "scraping": {
