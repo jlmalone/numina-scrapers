@@ -8,6 +8,13 @@ import { Scheduler, commonSchedules } from './core/Scheduler.js';
 import { MindbodyProvider } from './providers/MindbodyProvider.js';
 import { EquinoxProvider } from './providers/EquinoxProvider.js';
 import { ClassPassProvider } from './providers/ClassPassProvider.js';
+import { SoulCycleProvider } from './providers/SoulCycleProvider.js';
+import { BarrysProvider } from './providers/BarrysProvider.js';
+import { OrangetheoryProvider } from './providers/OrangetheoryProvider.js';
+import { CorePowerYogaProvider } from './providers/CorePowerYogaProvider.js';
+import { F45Provider } from './providers/F45Provider.js';
+import { PlanetFitnessProvider } from './providers/PlanetFitnessProvider.js';
+import { LAFitnessProvider } from './providers/LAFitnessProvider.js';
 import { BaseProvider } from './providers/BaseProvider.js';
 import { logger } from './utils/logger.js';
 import { ScrapeOptions } from './models/FitnessClass.js';
@@ -45,10 +52,24 @@ function initializeProviders(): void {
   const mindbodyConfig = config.providers?.mindbody || { enabled: true, baseUrl: 'https://example.mindbody.io' };
   const equinoxConfig = config.providers?.equinox || { enabled: true, baseUrl: 'https://www.equinox.com' };
   const classpassConfig = config.providers?.classpass || { enabled: true, baseUrl: 'https://classpass.com' };
+  const soulcycleConfig = config.providers?.soulcycle || { enabled: true, baseUrl: 'https://www.soulcycle.com' };
+  const barrysConfig = config.providers?.barrys || { enabled: true, baseUrl: 'https://www.barrys.com' };
+  const orangetheoryConfig = config.providers?.orangetheory || { enabled: true, baseUrl: 'https://www.orangetheory.com' };
+  const corepoweryogaConfig = config.providers?.corepoweryoga || { enabled: true, baseUrl: 'https://www.corepoweryoga.com' };
+  const f45Config = config.providers?.f45 || { enabled: true, baseUrl: 'https://f45training.com' };
+  const planetfitnessConfig = config.providers?.planetfitness || { enabled: true, baseUrl: 'https://www.planetfitness.com' };
+  const lafitnessConfig = config.providers?.lafitness || { enabled: true, baseUrl: 'https://www.lafitness.com' };
 
   providers.set('mindbody', new MindbodyProvider(chromeManager, mindbodyConfig));
   providers.set('equinox', new EquinoxProvider(chromeManager, equinoxConfig));
   providers.set('classpass', new ClassPassProvider(chromeManager, classpassConfig));
+  providers.set('soulcycle', new SoulCycleProvider(chromeManager, soulcycleConfig));
+  providers.set('barrys', new BarrysProvider(chromeManager, barrysConfig));
+  providers.set('orangetheory', new OrangetheoryProvider(chromeManager, orangetheoryConfig));
+  providers.set('corepoweryoga', new CorePowerYogaProvider(chromeManager, corepoweryogaConfig));
+  providers.set('f45', new F45Provider(chromeManager, f45Config));
+  providers.set('planetfitness', new PlanetFitnessProvider(chromeManager, planetfitnessConfig));
+  providers.set('lafitness', new LAFitnessProvider(chromeManager, lafitnessConfig));
 
   logger.info(`Initialized ${providers.size} providers`);
 }
@@ -65,7 +86,7 @@ program
 program
   .command('scrape')
   .description('Scrape classes from a provider')
-  .option('-p, --provider <name>', 'Provider name (mindbody, equinox, classpass, or all)')
+  .option('-p, --provider <name>', 'Provider name (mindbody, equinox, classpass, soulcycle, barrys, orangetheory, corepoweryoga, f45, planetfitness, lafitness, or all)')
   .option('-l, --location <location>', 'Location to search')
   .option('-s, --start-date <date>', 'Start date (YYYY-MM-DD)')
   .option('-e, --end-date <date>', 'End date (YYYY-MM-DD)')

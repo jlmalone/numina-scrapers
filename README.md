@@ -15,7 +15,7 @@ TypeScript/Node.js service for scraping and aggregating fitness class data from 
 
 ## Status
 
-✅ **Implemented** - Core scraping infrastructure with 3 provider adapters
+✅ **Implemented** - Core scraping infrastructure with 10 provider adapters
 
 ## Quick Start
 
@@ -109,7 +109,22 @@ npm run scrape -- upload
 
 ## Provider Adapters
 
-### Implemented Providers
+### Implemented Providers (10 Total)
+
+| Provider | Type | Focus | Locations | Data Quality | Special Notes |
+|----------|------|-------|-----------|--------------|---------------|
+| **Mindbody** | Platform | Multi-studio booking | Global | ⭐⭐⭐⭐⭐ | Major booking platform |
+| **Equinox** | Premium Gym | Luxury fitness | 100+ clubs | ⭐⭐⭐⭐ | High-end classes |
+| **ClassPass** | Platform | Multi-studio subscription | Global | ⭐⭐⭐⭐⭐ | Aggregator |
+| **SoulCycle** | Boutique Studio | Indoor cycling | 90+ studios | ⭐⭐⭐⭐ | Premium cycling |
+| **Barry's Bootcamp** | Boutique Studio | HIIT training | 80+ studios | ⭐⭐⭐⭐ | High-intensity |
+| **Orangetheory** | Franchise | Heart-rate training | 1,500+ studios | ⭐⭐⭐⭐ | Interval training |
+| **CorePower Yoga** | Yoga Studio | Yoga classes | 200+ studios | ⭐⭐⭐⭐ | Multiple yoga styles |
+| **F45 Training** | Franchise | Functional training | 3,000+ studios | ⭐⭐⭐⭐ | Daily changing workouts |
+| **Planet Fitness** | Budget Gym | Group fitness | 2,400+ clubs | ⭐⭐⭐ | Free for members |
+| **LA Fitness** | Full-Service Gym | Group classes | 700+ clubs | ⭐⭐⭐ | Wide variety |
+
+### Provider Details
 
 1. **Mindbody** (`MindbodyProvider`)
    - Major booking platform used by gyms and studios worldwide
@@ -122,6 +137,34 @@ npm run scrape -- upload
 3. **ClassPass** (`ClassPassProvider`)
    - Multi-studio subscription service
    - Aggregates classes from various boutique fitness studios
+
+4. **SoulCycle** (`SoulCycleProvider`)
+   - Premium indoor cycling classes
+   - High-energy music-driven workouts
+
+5. **Barry's Bootcamp** (`BarrysProvider`)
+   - High-intensity interval training
+   - Combination of treadmill and strength training
+
+6. **Orangetheory Fitness** (`OrangetheoryProvider`)
+   - Heart rate-based interval training
+   - Mix of cardio, rowing, and strength
+
+7. **CorePower Yoga** (`CorePowerYogaProvider`)
+   - Yoga studio chain with multiple class formats
+   - C1, C2, Sculpt, and Hot Yoga classes
+
+8. **F45 Training** (`F45Provider`)
+   - Functional training franchise
+   - 45-minute team-based HIIT workouts
+
+9. **Planet Fitness** (`PlanetFitnessProvider`)
+   - Budget-friendly gym chain
+   - Group fitness classes included with membership
+
+10. **LA Fitness** (`LAFitnessProvider`)
+    - Full-service gym chain
+    - Wide variety of group fitness classes
 
 ### How Providers Work
 
@@ -284,7 +327,7 @@ interface FitnessClass {
 
 ### Scrape Options
 
-- `--provider <name>`: Provider to scrape (mindbody, equinox, classpass, all)
+- `--provider <name>`: Provider to scrape (mindbody, equinox, classpass, soulcycle, barrys, orangetheory, corepoweryoga, f45, planetfitness, lafitness, or all)
 - `--location <location>`: Location to search
 - `--start-date <YYYY-MM-DD>`: Start date filter
 - `--end-date <YYYY-MM-DD>`: End date filter
@@ -389,11 +432,18 @@ npm run lint
 numina-scrapers/
 ├── src/
 │   ├── index.ts                 # CLI entry point
-│   ├── providers/               # Provider adapters
+│   ├── providers/               # Provider adapters (10 total)
 │   │   ├── BaseProvider.ts      # Base class for all providers
 │   │   ├── MindbodyProvider.ts
 │   │   ├── EquinoxProvider.ts
-│   │   └── ClassPassProvider.ts
+│   │   ├── ClassPassProvider.ts
+│   │   ├── SoulCycleProvider.ts
+│   │   ├── BarrysProvider.ts
+│   │   ├── OrangetheoryProvider.ts
+│   │   ├── CorePowerYogaProvider.ts
+│   │   ├── F45Provider.ts
+│   │   ├── PlanetFitnessProvider.ts
+│   │   └── LAFitnessProvider.ts
 │   ├── core/                    # Core services
 │   │   ├── ChromeManager.ts     # Puppeteer management
 │   │   ├── Database.ts          # SQLite operations
@@ -414,15 +464,16 @@ numina-scrapers/
 └── README.md
 ```
 
-## Future Providers (See TODO.md)
+## Future Providers
 
+See `TODO.md` for the next wave of 10+ providers to be added, including:
 - 24 Hour Fitness
-- Planet Fitness
-- LA Fitness
-- SoulCycle
-- Barry's Bootcamp
+- Crunch Fitness
+- Gold's Gym
 - Peloton Studios
-- And 10+ more...
+- Pure Barre
+- CycleBar
+- And many more...
 
 ## License
 
