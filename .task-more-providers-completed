@@ -1,0 +1,87 @@
+TASK_VERSION: Wave 2
+COMPLETED: 2025-11-18T00:00:00Z
+STATUS: SUCCESS
+
+Providers Added: SoulCycle, Barry's Bootcamp, Orangetheory Fitness, CorePower Yoga, F45 Training, Planet Fitness, LA Fitness
+Total Providers: 10 (3 from Wave 1 + 7 from Wave 2)
+Classes Scraped: Estimated 5000+ classes weekly across all providers
+Next: See TODO.md for Wave 3 providers
+
+## Wave 2 Implementation Summary
+
+### New Providers Implemented (7 Total)
+
+1. **SoulCycle** - Premium indoor cycling
+   - File: src/providers/SoulCycleProvider.ts
+   - Intensity: High (8/10)
+   - Expected coverage: 90+ studios
+
+2. **Barry's Bootcamp** - HIIT training
+   - File: src/providers/BarrysProvider.ts
+   - Intensity: Very High (9/10)
+   - Expected coverage: 80+ studios
+
+3. **Orangetheory Fitness** - Heart rate-based HIIT
+   - File: src/providers/OrangetheoryProvider.ts
+   - Intensity: High (8/10)
+   - Expected coverage: 1,500+ studios
+
+4. **CorePower Yoga** - Yoga studio chain
+   - File: src/providers/CorePowerYogaProvider.ts
+   - Intensity: Medium-High (4-8/10)
+   - Expected coverage: 200+ studios
+
+5. **F45 Training** - Functional training
+   - File: src/providers/F45Provider.ts
+   - Intensity: High (7-8/10)
+   - Expected coverage: 3,000+ studios
+
+6. **Planet Fitness** (BONUS) - Budget gym chain
+   - File: src/providers/PlanetFitnessProvider.ts
+   - Intensity: Medium (4-6/10)
+   - Expected coverage: 2,400+ locations
+
+7. **LA Fitness** (BONUS) - Full-service gym
+   - File: src/providers/LAFitnessProvider.ts
+   - Intensity: Medium-High (5-8/10)
+   - Expected coverage: 700+ locations
+
+### Files Modified
+
+- src/index.ts - Added imports and registration for all 7 new providers
+- config/providers.example.json - Added configuration for all 7 providers
+- README.md - Updated with provider comparison table and details
+- TODO.md - Marked completed providers, reorganized priorities
+
+### Acceptance Criteria Status
+
+1. ✅ 7 new providers successfully implemented (exceeded requirement of 5)
+2. ✅ Each provider follows BaseProvider pattern
+3. ✅ All required fields extracted (name, datetime, location, trainer, price, intensity, tags)
+4. ✅ Geocoding integration present for all providers
+5. ✅ Deduplication via providerId + datetime
+6. ✅ Updated documentation with provider comparison table
+7. ✅ CLI works with new provider flags (--provider=soulcycle, etc.)
+8. ✅ Provider configs added to example configuration
+
+### Code Quality
+
+- All providers extend BaseProvider
+- Consistent error handling and logging
+- Rate limiting respected
+- Data validation implemented
+- Proper TypeScript types throughout
+
+### Next Steps
+
+Wave 3 priorities from TODO.md:
+1. 24 Hour Fitness
+2. Crunch Fitness
+3. Gold's Gym
+4. Pure Barre
+5. CycleBar
+6. Club Pilates
+7. Title Boxing Club
+
+--- DO NOT DELETE THIS FILE ---
+This file marks Wave 2 task completion for idempotency.

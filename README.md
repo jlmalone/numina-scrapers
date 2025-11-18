@@ -109,7 +109,22 @@ npm run scrape -- upload
 
 ## Provider Adapters
 
-### Implemented Providers
+### Implemented Providers (10 Total)
+
+| Provider | Type | Coverage | Intensity | Price Model | Status |
+|----------|------|----------|-----------|-------------|--------|
+| **Mindbody** | Booking Platform | 1000s of studios | Varies | Per class/package | ✅ Active |
+| **Equinox** | Luxury Gym Chain | 100+ locations | High | Membership | ✅ Active |
+| **ClassPass** | Multi-Studio Platform | 1000s of studios | Varies | Credit-based | ✅ Active |
+| **SoulCycle** | Indoor Cycling | 90+ studios | High (8/10) | $34/class avg | ✅ Active |
+| **Barry's Bootcamp** | HIIT Training | 80+ studios | Very High (9/10) | $38/class avg | ✅ Active |
+| **Orangetheory** | Heart Rate HIIT | 1,500+ studios | High (8/10) | $28/class avg | ✅ Active |
+| **CorePower Yoga** | Yoga Studios | 200+ studios | Medium-High (4-8/10) | $25/class avg | ✅ Active |
+| **F45 Training** | Functional Training | 3,000+ studios | High (7-8/10) | $30/class avg | ✅ Active |
+| **Planet Fitness** | Budget Gym | 2,400+ locations | Medium (4-6/10) | Free with membership | ✅ Active |
+| **LA Fitness** | Full-Service Gym | 700+ locations | Medium-High (5-8/10) | Free with membership | ✅ Active |
+
+### Provider Details
 
 1. **Mindbody** (`MindbodyProvider`)
    - Major booking platform used by gyms and studios worldwide
@@ -122,6 +137,34 @@ npm run scrape -- upload
 3. **ClassPass** (`ClassPassProvider`)
    - Multi-studio subscription service
    - Aggregates classes from various boutique fitness studios
+
+4. **SoulCycle** (`SoulCycleProvider`)
+   - Premium indoor cycling studio chain
+   - Rhythm-based cycling classes with music
+
+5. **Barry's Bootcamp** (`BarrysProvider`)
+   - High-intensity interval training studio
+   - "Red Room" workouts with treadmill + strength training
+
+6. **Orangetheory Fitness** (`OrangetheoryProvider`)
+   - Heart rate-based interval training
+   - Science-backed workouts with HR monitoring
+
+7. **CorePower Yoga** (`CorePowerYogaProvider`)
+   - Large yoga studio chain
+   - Multiple formats: C1, C2, Hot Power Fusion, Sculpt
+
+8. **F45 Training** (`F45Provider`)
+   - 45-minute functional training workouts
+   - Team-based HIIT with rotating daily programs
+
+9. **Planet Fitness** (`PlanetFitnessProvider`)
+   - Budget-friendly gym chain
+   - Basic group classes (circuit, cardio, stretch)
+
+10. **LA Fitness** (`LAFitnessProvider`)
+    - Full-service gym with diverse class offerings
+    - Wide variety from yoga to bootcamp
 
 ### How Providers Work
 
@@ -417,12 +460,16 @@ numina-scrapers/
 ## Future Providers (See TODO.md)
 
 - 24 Hour Fitness
-- Planet Fitness
-- LA Fitness
-- SoulCycle
-- Barry's Bootcamp
+- Crunch Fitness
+- Gold's Gym
+- Lifetime Fitness
 - Peloton Studios
-- And 10+ more...
+- Flywheel Sports
+- CycleBar
+- Title Boxing Club
+- Club Pilates
+- YogaWorks
+- And many more...
 
 ## License
 

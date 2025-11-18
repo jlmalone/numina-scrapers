@@ -1,8 +1,25 @@
 # TODO - Numina Scrapers
 
+## Completed Providers ✅
+
+- ✅ Mindbody (Initial - Wave 1)
+- ✅ Equinox (Initial - Wave 1)
+- ✅ ClassPass (Initial - Wave 1)
+- ✅ SoulCycle (Wave 2 - Completed)
+- ✅ Barry's Bootcamp (Wave 2 - Completed)
+- ✅ Orangetheory Fitness (Wave 2 - Completed)
+- ✅ CorePower Yoga (Wave 2 - Completed)
+- ✅ F45 Training (Wave 2 - Completed)
+- ✅ Planet Fitness (Wave 2 - Bonus)
+- ✅ LA Fitness (Wave 2 - Bonus)
+
+**Total: 10 Providers Implemented**
+
+---
+
 ## Priority: High
 
-### Additional Provider Implementations
+### Wave 3: Additional Provider Implementations
 
 1. **24 Hour Fitness** (Priority: High)
    - Large national gym chain
@@ -11,18 +28,19 @@
    - Implementation effort: Medium
    - Expected classes: 1000s weekly
 
-2. **Planet Fitness** (Priority: High)
-   - Massive chain with 2000+ locations
-   - Focus on circuit training and basic fitness classes
-   - Website: https://www.planetfitness.com
+2. **Crunch Fitness** (Priority: High)
+   - National gym chain with unique classes
+   - Focus on group fitness and personal training
+   - Website: https://www.crunch.com
    - Implementation effort: Medium
-   - Expected classes: 500+ weekly
+   - Expected classes: 400+ weekly
 
-3. **LA Fitness** (Priority: High)
-   - National chain with extensive group fitness programs
-   - Website: https://www.lafitness.com
+3. **Gold's Gym** (Priority: High)
+   - Classic gym chain with global presence
+   - Wide variety of group fitness classes
+   - Website: https://www.goldsgym.com
    - Implementation effort: Medium
-   - Expected classes: 1500+ weekly
+   - Expected classes: 600+ weekly
 
 ### Core Enhancements
 
@@ -48,39 +66,33 @@
 
 ### Boutique Fitness Providers
 
-7. **SoulCycle** (Priority: Medium)
-   - Premium indoor cycling studio chain
-   - Website: https://www.soul-cycle.com
+4. **Pure Barre** (Priority: Medium)
+   - Barre fitness studios
+   - Website: https://www.purebarre.com
+   - Implementation effort: Low
+   - Expected classes: 300+ weekly
+
+5. **CycleBar** (Priority: Medium)
+   - Indoor cycling studio chain
+   - Website: https://www.cyclebar.com
+   - Implementation effort: Low
+   - Expected classes: 250+ weekly
+
+6. **Club Pilates** (Priority: Medium)
+   - Reformer pilates studio chain
+   - Website: https://www.clubpilates.com
+   - Implementation effort: Medium
+   - Expected classes: 400+ weekly
+
+7. **Title Boxing Club** (Priority: Medium)
+   - Boxing fitness studios
+   - Website: https://titleboxingclub.com
    - Implementation effort: Low
    - Expected classes: 200+ weekly
 
-8. **Barry's Bootcamp** (Priority: Medium)
-   - High-intensity interval training studios
-   - Website: https://www.barrysbootcamp.com
-   - Implementation effort: Low
-   - Expected classes: 150+ weekly
-
-9. **CorePower Yoga** (Priority: Medium)
-   - Large yoga studio chain
-   - Website: https://www.corepoweryoga.com
-   - Implementation effort: Low
-   - Expected classes: 500+ weekly
-
-10. **Orangetheory Fitness** (Priority: Medium)
-    - Science-based interval training
-    - Website: https://www.orangetheory.com
-    - Implementation effort: Medium
-    - Expected classes: 800+ weekly
-
-11. **Pure Barre** (Priority: Medium)
-    - Barre fitness studios
-    - Website: https://www.purebarre.com
-    - Implementation effort: Low
-    - Expected classes: 300+ weekly
-
 ### Platform Integrations
 
-12. **Gympass** (Priority: Medium)
+8. **Gympass** (Priority: Medium)
     - Corporate wellness platform
     - Aggregates multiple studios
     - Website: https://www.gympass.com
