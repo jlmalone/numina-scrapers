@@ -1,18 +1,22 @@
 import { BaseProvider, ProviderConfig } from './BaseProvider.js';
 import { FitnessClass, ScrapeOptions, ScrapeResult } from '../models/FitnessClass.js';
 import { ChromeManager } from '../core/ChromeManager.js';
-import { geocodeAddress } from '../utils/geocoding.js';
-import { parseIntensity, parseTags, sanitizeString } from '../utils/validation.js';
+import { sanitizeString } from '../utils/validation.js';
 
 /**
  * Provider adapter for Equinox gym chain
- * Equinox is a luxury fitness club chain with premium group classes
- *
- * Note: This implementation is a template based on typical gym website structures.
- * You'll need to inspect Equinox's actual website and adjust selectors.
+ * Uses the Equinox API endpoint for class schedules
  */
 export class EquinoxProvider extends BaseProvider {
   readonly name = 'equinox';
+  private readonly apiEndpoint = 'https://api.equinox.com/v6/groupfitness/classes/allclasses';
+
+  // Equinox facility IDs (can be extended to support multiple locations)
+  private readonly facilityMap: Record<string, number> = {
+    'canada/vancouver/westgeorgiast': 860,
+    'westgeorgiast': 860,
+    'vancouver': 860
+  };
 
   constructor(chromeManager: ChromeManager, config: ProviderConfig) {
     super(chromeManager, config);
@@ -22,206 +26,230 @@ export class EquinoxProvider extends BaseProvider {
     const classes: FitnessClass[] = [];
     const errors: string[] = [];
 
-    this.logProgress('Starting Equinox scrape');
+    this.logProgress('Starting Equinox API scrape');
 
-    const page = await this.chromeManager.newPage();
+    // Determine facility ID from location
+    const location = (options.location || this.config.defaultLocation || 'vancouver').toLowerCase();
+    const facilityId = this.facilityMap[location] || 860;
+
+    this.logProgress(`Using facility ID: ${facilityId} for location: ${location}`);
+
+    // Prepare date range
+    const startDate = options.startDate || new Date();
+    const endDate = options.endDate || new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000); // Default: 7 days
+
+    const startDateStr = this.formatDate(startDate);
+    const endDateStr = this.formatDate(endDate);
+
+    this.logProgress(`Date range: ${startDateStr} to ${endDateStr}`);
 
     try {
-      // Navigate to the class schedule page
-      // Equinox typically has location-specific schedules
-      const location = options.location || this.config.defaultLocation || 'new-york';
-      const scheduleUrl = `${this.config.baseUrl}/clubs/${location}/schedule`;
-
-      await this.chromeManager.navigateWithRetry(page, scheduleUrl);
-      this.logProgress(`Loaded schedule page for location: ${location}`);
-
-      // Wait for schedule container
-      const scheduleSelector = '.schedule-container, .class-schedule, [data-schedule]';
+      // Make API request using Puppeteer to handle CORS and cookies
+      const page = await this.chromeManager.newPage();
 
       try {
-        await page.waitForSelector(scheduleSelector, { timeout: 10000 });
-      } catch (error) {
-        this.logError('Schedule container not found. Site structure may have changed.');
-        errors.push('Schedule not found');
-        return this.createScrapeResult(classes, false, errors);
-      }
+        // Navigate to the club page first to establish session
+        const clubUrl = `${this.config.baseUrl}/clubs/canada/vancouver/westgeorgiast`;
+        await this.chromeManager.navigateWithRetry(page, clubUrl);
+        await this.delay(2000);
 
-      // Extract all class cards/items
-      const classCards = await page.$$('.class-card, .schedule-class, .group-class-item');
-      this.logProgress(`Found ${classCards.length} potential classes`);
+        // Make API request via page.evaluate to bypass CORS
+        const apiResponse = await page.evaluate(async (apiUrl, payload) => {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
 
-      for (let i = 0; i < classCards.length; i++) {
-        try {
-          const classInfo = await page.evaluate((card) => {
-            // Extract data from card (adjust selectors based on actual site)
-            const getTextContent = (selector: string): string => {
-              const el = card.querySelector(selector);
-              return el?.textContent?.trim() || '';
-            };
-
-            const getAttribute = (selector: string, attr: string): string => {
-              const el = card.querySelector(selector);
-              return el?.getAttribute(attr) || '';
-            };
-
-            // Extract photos
-            const photoEls = card.querySelectorAll('img.class-image, .photo img, .gallery img, .thumbnail img');
-            const photos = Array.from(photoEls).map((img: any) =>
-              img.src || img.getAttribute('data-src') || img.getAttribute('data-lazy-src')
-            ).filter(url => url && url.startsWith('http'));
-
-            return {
-              name: getTextContent('.class-title, .class-name, h3, h4'),
-              instructor: getTextContent('.instructor-name, .teacher, [data-instructor]'),
-              time: getTextContent('.class-time, .time'),
-              date: getTextContent('.class-date, .date') || getAttribute('[data-date]', 'data-date'),
-              duration: getTextContent('.duration, .class-duration'),
-              description: getTextContent('.class-description, .description, p'),
-              location: getTextContent('.location, .studio'),
-              level: getTextContent('.level, .intensity'),
-              spotsAvailable: getTextContent('.spots, .availability'),
-              bookingLink: getAttribute('a.book-now, .booking-link', 'href'),
-              // Enhanced fields
-              instructorBio: getTextContent('.instructor-bio, .trainer-bio'),
-              instructorPhoto: getAttribute('.instructor-photo img, .trainer-photo img', 'src'),
-              amenitiesText: getTextContent('.amenities, .facilities, .club-features'),
-              bookingStatus: getTextContent('.status, .booking-status'),
-              pricingInfo: getTextContent('.pricing, .membership-info'),
-              rating: getTextContent('.rating, .reviews, [data-rating]'),
-              photos: photos.slice(0, 5)
-            };
-          }, classCards[i]);
-
-          // Skip if no class name
-          if (!classInfo.name) {
-            continue;
+          if (!response.ok) {
+            throw new Error(`API request failed: ${response.status}`);
           }
 
-          // Parse datetime
-          const datetime = this.parseDateTime(classInfo.date, classInfo.time);
-          if (!datetime) {
-            this.logError(`Could not parse datetime for class: ${classInfo.name}`);
-            continue;
-          }
+          return await response.json();
+        }, this.apiEndpoint, {
+          startDate: startDateStr,
+          endDate: endDateStr,
+          facilityIds: [facilityId],
+          isBookingRequired: false
+        });
 
-          // Check if within date range
-          if (!this.isWithinDateRange(datetime, options)) {
-            continue;
-          }
+        this.logProgress(`API response received: ${apiResponse.classes?.length || 0} classes found`);
 
-          // Get location details
-          const locationName = classInfo.location || `Equinox ${location}`;
-          const address = `Equinox ${location}`; // In production, maintain a location database
+        // Process classes from API response
+        if (apiResponse.classes && Array.isArray(apiResponse.classes)) {
+          for (const classData of apiResponse.classes) {
+            try {
+              const fitnessClass = this.transformApiClass(classData, facilityId);
 
-          // Geocode location
-          const geocoded = await geocodeAddress(address);
-          const locationData = geocoded
-            ? {
-                name: locationName,
-                address: geocoded.formattedAddress,
-                lat: geocoded.lat,
-                long: geocoded.long
+              if (fitnessClass && this.validateClass(fitnessClass)) {
+                classes.push(fitnessClass);
+                this.logProgress(`Scraped: ${fitnessClass.name} on ${new Date(fitnessClass.datetime).toLocaleString()}`);
+
+                // Check max results limit
+                if (options.maxResults && classes.length >= options.maxResults) {
+                  this.logProgress(`Reached max results limit: ${options.maxResults}`);
+                  break;
+                }
               }
-            : {
-                name: locationName,
-                address: address,
-                lat: 40.7589, // Default NYC coordinates (placeholder)
-                long: -73.9851
-              };
-
-          // Parse intensity from level
-          let intensity = 5;
-          if (classInfo.level) {
-            intensity = parseIntensity(classInfo.level);
-          } else if (classInfo.description) {
-            intensity = parseIntensity(classInfo.description);
+            } catch (error) {
+              const errorMsg = `Error processing class: ${error}`;
+              this.logError(errorMsg);
+              errors.push(errorMsg);
+            }
           }
-
-          // Determine capacity (Equinox classes typically have limited spots)
-          const capacity = this.parseCapacity(classInfo.spotsAvailable) || 25;
-
-          // Parse enhanced fields
-          const realTimeAvailability = this.parseAvailability(classInfo.spotsAvailable);
-          const bookingStatus = this.parseBookingStatus(
-            classInfo.bookingStatus || classInfo.spotsAvailable || '',
-            realTimeAvailability
-          );
-          const amenities = classInfo.amenitiesText
-            ? this.parseAmenities(classInfo.amenitiesText)
-            : [
-                { type: 'locker', available: true },
-                { type: 'shower', available: true },
-                { type: 'equipment', available: true }
-              ]; // Default Equinox amenities
-          const trainerInfo = classInfo.instructorBio || classInfo.instructorPhoto
-            ? this.parseTrainerInfo(
-                sanitizeString(classInfo.instructor) || 'Staff',
-                classInfo.instructorBio ? sanitizeString(classInfo.instructorBio) : undefined,
-                classInfo.instructorPhoto || undefined
-              )
-            : undefined;
-
-          // Create fitness class object
-          const fitnessClass: FitnessClass = {
-            name: sanitizeString(classInfo.name),
-            description: sanitizeString(classInfo.description),
-            datetime,
-            location: locationData,
-            trainer: sanitizeString(classInfo.instructor) || 'Staff',
-            intensity,
-            price: 0, // Equinox is membership-based, classes typically included
-            bookingUrl: this.normalizeUrl(classInfo.bookingLink) || scheduleUrl,
-            providerId: `equinox-${locationName}-${datetime.getTime()}-${classInfo.name}`,
-            providerName: this.name,
-            capacity,
-            tags: parseTags(classInfo.name + ' ' + classInfo.description + ' ' + classInfo.level),
-            // Enhanced fields
-            photos: classInfo.photos.length > 0 ? classInfo.photos : undefined,
-            trainerInfo,
-            amenities,
-            realTimeAvailability,
-            bookingStatus,
-            lastAvailabilityCheck: new Date(),
-            pricingDetails: classInfo.pricingInfo
-              ? this.parsePricingDetails(classInfo.pricingInfo, 0)
-              : { membership: { monthly: 0, description: 'Included with membership' } }
-          };
-
-          // Validate and add
-          if (this.validateClass(fitnessClass)) {
-            classes.push(fitnessClass);
-            this.logProgress(`Scraped: ${fitnessClass.name} on ${datetime.toLocaleString()}`);
-          } else {
-            this.logError(`Invalid class data for: ${classInfo.name}`);
-          }
-
-          // Respect rate limits
-          await this.respectRateLimit();
-
-          // Check max results
-          if (options.maxResults && classes.length >= options.maxResults) {
-            break;
-          }
-
-        } catch (error) {
-          const errorMsg = `Error processing class card ${i}: ${error}`;
+        } else {
+          const errorMsg = 'Invalid API response format';
           this.logError(errorMsg);
           errors.push(errorMsg);
         }
+
+        this.logProgress(`Equinox scrape complete. Found ${classes.length} valid classes`);
+
+      } finally {
+        await this.chromeManager.closePage(page);
       }
 
-      this.logProgress(`Equinox scrape complete. Found ${classes.length} classes`);
-
     } catch (error) {
-      const errorMsg = `Equinox scraping failed: ${error}`;
+      const errorMsg = `Equinox API scraping failed: ${error}`;
       this.logError(errorMsg);
       errors.push(errorMsg);
       return this.createScrapeResult(classes, false, errors);
-
-    } finally {
-      await this.chromeManager.closePage(page);
     }
 
     return this.createScrapeResult(classes, true, errors);
+  }
+
+  /**
+   * Transform API class data to FitnessClass format
+   */
+  private transformApiClass(apiClass: any, facilityId: number): FitnessClass | null {
+    try {
+      // Extract class name - API uses "name" field
+      const className = apiClass.name || 'Unknown Class';
+      const classDescription = apiClass.classDescription || '';
+
+      // Parse dates - API returns ISO 8601 dates
+      const startDate = new Date(apiClass.startDate);
+      const endDate = new Date(apiClass.endDate);
+
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        this.logError(`Invalid dates for class: ${className}`);
+        return null;
+      }
+
+      // Extract instructor information
+      let instructorName = 'Staff';
+      let trainerInfo = undefined;
+
+      if (apiClass.instructors && apiClass.instructors.length > 0) {
+        const primaryInstructor = apiClass.instructors[0].instructor;
+        instructorName = sanitizeString(`${primaryInstructor.firstName} ${primaryInstructor.lastName}`);
+
+        const instructorAvatar = primaryInstructor.instructorAvatar?.[0];
+        trainerInfo = {
+          name: instructorName,
+          bio: primaryInstructor.bio ? sanitizeString(primaryInstructor.bio) : undefined,
+          photoUrl: instructorAvatar?.avatarHeadshotsImageUrl || instructorAvatar?.avatarThumbnailImageUrl || undefined
+        };
+      }
+
+      // Parse capacity and availability
+      const capacity = apiClass.status?.totalReservableItems || 25;
+      const enrolled = apiClass.status?.totalReserved || 0;
+      const spotsAvailable = capacity - enrolled;
+
+      // Determine booking status
+      let bookingStatus: 'open' | 'closed' | 'full' | 'waitlist' | undefined;
+      if (apiClass.status?.isClassFull) {
+        bookingStatus = 'full';
+      } else if (apiClass.status?.isWithinReservationPeriod) {
+        bookingStatus = 'open';
+      } else {
+        bookingStatus = 'closed';
+      }
+
+      // Parse intensity from class level
+      let intensity = 5; // Default medium intensity
+      if (apiClass.classLevel?.content) {
+        const levelText = apiClass.classLevel.content.toLowerCase();
+        if (levelText.includes('beginner') || levelText.includes('all levels')) {
+          intensity = 3;
+        } else if (levelText.includes('advanced') || levelText.includes('high')) {
+          intensity = 8;
+        }
+      }
+
+      // Build location data
+      const locationData = {
+        name: `Equinox - ${apiClass.studioName || 'Main Studio'}`,
+        address: 'Equinox West Georgia Street, 1131 West Georgia Street, Vancouver, BC V6E 2X5',
+        lat: 49.2826, // Vancouver Equinox coordinates
+        long: -123.1207
+      };
+
+      // Extract tags from class title and description
+      const tags: string[] = [];
+      if (className && typeof className === 'string' && className !== 'Unknown Class') {
+        tags.push(sanitizeString(className));
+      }
+      if (apiClass.primaryCategory?.name) tags.push(apiClass.primaryCategory.name);
+      if (apiClass.classLevel?.content) tags.push(apiClass.classLevel.content);
+      if (apiClass.timeSlot) tags.push(apiClass.timeSlot); // Morning, Afternoon, Evening
+
+      // Build FitnessClass object
+      const fitnessClass: FitnessClass = {
+        name: sanitizeString(className),
+        description: sanitizeString(classDescription),
+        datetime: startDate,
+        location: locationData,
+        trainer: instructorName,
+        intensity,
+        price: 0, // Equinox is membership-based
+        bookingUrl: `https://www.equinox.com/clubs/canada/vancouver/westgeorgiast?classId=${apiClass.classInstanceID}`,
+        providerId: `equinox-${facilityId}-${apiClass.classInstanceID}`,
+        providerName: this.name,
+        capacity,
+        tags,
+
+        // Enhanced fields
+        photos: apiClass.imageURL ? [
+          apiClass.imageURL.startsWith('//') ? `https:${apiClass.imageURL}` : apiClass.imageURL
+        ] : undefined,
+        trainerInfo,
+        amenities: [
+          { type: 'locker', available: true },
+          { type: 'shower', available: true },
+          { type: 'equipment', available: true }
+        ],
+        realTimeAvailability: spotsAvailable > 0 ? spotsAvailable : 0,
+        bookingStatus,
+        lastAvailabilityCheck: new Date(),
+        pricingDetails: {
+          membership: {
+            monthly: 0,
+            description: 'Included with Equinox membership'
+          }
+        }
+      };
+
+      return fitnessClass;
+
+    } catch (error) {
+      this.logError(`Error transforming class data: ${error}`);
+      return null;
+    }
+  }
+
+  /**
+   * Format date as YYYY-MM-DD for API
+   */
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }
