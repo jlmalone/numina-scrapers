@@ -199,6 +199,17 @@ export class EquinoxProvider extends BaseProvider {
       if (apiClass.classLevel?.content) tags.push(apiClass.classLevel.content);
       if (apiClass.timeSlot) tags.push(apiClass.timeSlot); // Morning, Afternoon, Evening
 
+      // Extract class ID - try multiple possible field names
+      const classId = apiClass.classInstanceID || apiClass.classInstanceId ||
+                      apiClass.id || apiClass.classId || apiClass.instanceId ||
+                      apiClass.reservationId || apiClass.classScheduleID ||
+                      apiClass.scheduleId;
+
+      // Log error if no ID found
+      if (!classId) {
+        this.logError(`No class ID found for ${className}. Available fields: ${Object.keys(apiClass).slice(0, 20).join(', ')}...`);
+      }
+
       // Build FitnessClass object
       const fitnessClass: FitnessClass = {
         name: sanitizeString(className),
@@ -208,8 +219,8 @@ export class EquinoxProvider extends BaseProvider {
         trainer: instructorName,
         intensity,
         price: 0, // Equinox is membership-based
-        bookingUrl: `https://www.equinox.com/clubs/canada/vancouver/westgeorgiast?classId=${apiClass.classInstanceID}`,
-        providerId: `equinox-${facilityId}-${apiClass.classInstanceID}`,
+        bookingUrl: classId ? `https://www.equinox.com/groupfitness/${classId}` : `https://www.equinox.com/clubs/canada/vancouver/westgeorgiast`,
+        providerId: `equinox-${facilityId}-${classId || Date.now()}`,
         providerName: this.name,
         capacity,
         tags,
