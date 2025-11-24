@@ -1,0 +1,18 @@
+
+🔍 Inspecting Equinox Website: https://www.equinox.com/clubs/new-york-ny/schedule
+
+📄 Navigating to page...
+📡 API Call: https://www.equinox.com/clubs/new-york-ny/schedule
+📡 API Call: https://www.equinox.com/api/auth/me
+📡 API Call: https://www.equinox.com/api/auth/me
+📡 API Call: https://www.gstatic.com/recaptcha/api2/logo_48.png
+⏳ Waiting for content to load (10 seconds)...
+❌ Error: page.waitForTimeout is not a function
+
+✅ Inspection complete
+
+Generated files:
+   - equinox-current.png (screenshot)
+   - equinox-current.html (page HTML)
+   - equinox-structure.json (page structure analysis)
+   - equinox-api-calls.json (network activity)

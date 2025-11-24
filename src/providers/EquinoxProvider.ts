@@ -11,12 +11,39 @@ export class EquinoxProvider extends BaseProvider {
   readonly name = 'equinox';
   private readonly apiEndpoint = 'https://api.equinox.com/v6/groupfitness/classes/allclasses';
 
-  // Equinox facility IDs (can be extended to support multiple locations)
-  private readonly facilityMap: Record<string, number> = {
-    'canada/vancouver/westgeorgiast': 860,
-    'westgeorgiast': 860,
-    'vancouver': 860
+  // Equinox facility IDs for major locations
+  private readonly facilityMap: Record<string, { id: number; name: string; clubUrl: string }> = {
+    // Vancouver
+    'vancouver': { id: 860, name: 'Equinox West Georgia Street', clubUrl: 'https://www.equinox.com/clubs/canada/vancouver/westgeorgiast' },
+    'westgeorgiast': { id: 860, name: 'Equinox West Georgia Street', clubUrl: 'https://www.equinox.com/clubs/canada/vancouver/westgeorgiast' },
+
+    // New York City
+    'nyc-hudsonyards': { id: 138, name: 'Equinox Hudson Yards', clubUrl: 'https://www.equinox.com/clubs/new-york/midtown/hudsonyards' },
+    'nyc-columbuscircle': { id: 113, name: 'Equinox Columbus Circle', clubUrl: 'https://www.equinox.com/clubs/new-york/uptown/columbuscircle' },
+
+    // Los Angeles
+    'la-sportsclub': { id: 713, name: 'Equinox Sports Club LA', clubUrl: 'https://www.equinox.com/clubs/southern-california/los-angeles/losangeles' },
+
+    // San Francisco
+    'sf-sportsclub': { id: 724, name: 'Equinox Sports Club SF', clubUrl: 'https://www.equinox.com/clubs/northern-california/sportsclubsanfrancisco' },
+
+    // Chicago
+    'chicago-lincolnpark': { id: 401, name: 'Equinox Lincoln Park', clubUrl: 'https://www.equinox.com/clubs/chicago/lincolnpark' },
+
+    // Miami
+    'miami-brickell': { id: 304, name: 'Equinox Brickell', clubUrl: 'https://www.equinox.com/clubs/florida/brickell' }
   };
+
+  // Default facility IDs to scrape when no specific location is provided
+  private readonly defaultFacilityIds = [
+    860,  // Vancouver
+    138,  // NYC Hudson Yards
+    113,  // NYC Columbus Circle
+    713,  // LA Sports Club
+    724,  // SF Sports Club
+    401,  // Chicago Lincoln Park
+    304   // Miami Brickell
+  ];
 
   constructor(chromeManager: ChromeManager, config: ProviderConfig) {
     super(chromeManager, config);
@@ -28,11 +55,36 @@ export class EquinoxProvider extends BaseProvider {
 
     this.logProgress('Starting Equinox API scrape');
 
-    // Determine facility ID from location
-    const location = (options.location || this.config.defaultLocation || 'vancouver').toLowerCase();
-    const facilityId = this.facilityMap[location] || 860;
+    // Determine which facilities to scrape
+    let facilityIdsToScrape: number[];
+    let locationNames: Map<number, { name: string; clubUrl: string }> = new Map();
 
-    this.logProgress(`Using facility ID: ${facilityId} for location: ${location}`);
+    if (options.location) {
+      // Scrape specific location
+      const location = options.location.toLowerCase();
+      const facility = this.facilityMap[location];
+
+      if (!facility) {
+        const errorMsg = `Unknown Equinox location: ${options.location}. Available: ${Object.keys(this.facilityMap).join(', ')}`;
+        this.logError(errorMsg);
+        errors.push(errorMsg);
+        return this.createScrapeResult(classes, false, errors);
+      }
+
+      facilityIdsToScrape = [facility.id];
+      locationNames.set(facility.id, { name: facility.name, clubUrl: facility.clubUrl });
+      this.logProgress(`Scraping specific location: ${facility.name} (ID: ${facility.id})`);
+    } else {
+      // Scrape all default locations
+      facilityIdsToScrape = this.defaultFacilityIds;
+
+      // Build location names map
+      for (const [key, facility] of Object.entries(this.facilityMap)) {
+        locationNames.set(facility.id, { name: facility.name, clubUrl: facility.clubUrl });
+      }
+
+      this.logProgress(`Scraping ${facilityIdsToScrape.length} Equinox locations`);
+    }
 
     // Prepare date range
     const startDate = options.startDate || new Date();
@@ -43,80 +95,107 @@ export class EquinoxProvider extends BaseProvider {
 
     this.logProgress(`Date range: ${startDateStr} to ${endDateStr}`);
 
+    // Create a single page for all API requests
+    let page = null;
+
     try {
-      // Make API request using Puppeteer to handle CORS and cookies
-      const page = await this.chromeManager.newPage();
+      page = await this.chromeManager.newPage();
 
-      try {
-        // Navigate to the club page first to establish session
-        const clubUrl = `${this.config.baseUrl}/clubs/canada/vancouver/westgeorgiast`;
-        await this.chromeManager.navigateWithRetry(page, clubUrl);
-        await this.delay(2000);
+      // Loop through each facility
+      for (const facilityId of facilityIdsToScrape) {
+        const location = locationNames.get(facilityId);
+        if (!location) {
+          this.logError(`No location data for facility ID: ${facilityId}`);
+          continue;
+        }
 
-        // Make API request via page.evaluate to bypass CORS
-        const apiResponse = await page.evaluate(async (apiUrl, payload) => {
-          const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify(payload)
+        this.logProgress(`\n--- Scraping ${location.name} (ID: ${facilityId}) ---`);
+
+        try {
+          // Navigate to the club page first to establish session
+          await this.chromeManager.navigateWithRetry(page, location.clubUrl);
+          await this.delay(2000);
+
+          // Make API request via page.evaluate to bypass CORS
+          const apiResponse = await page.evaluate(async (apiUrl, payload) => {
+            const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              throw new Error(`API request failed: ${response.status}`);
+            }
+
+            return await response.json();
+          }, this.apiEndpoint, {
+            startDate: startDateStr,
+            endDate: endDateStr,
+            facilityIds: [facilityId],
+            isBookingRequired: false
           });
 
-          if (!response.ok) {
-            throw new Error(`API request failed: ${response.status}`);
-          }
+          this.logProgress(`[${location.name}] API response: ${apiResponse.classes?.length || 0} classes found`);
 
-          return await response.json();
-        }, this.apiEndpoint, {
-          startDate: startDateStr,
-          endDate: endDateStr,
-          facilityIds: [facilityId],
-          isBookingRequired: false
-        });
+          // Process classes from API response
+          if (apiResponse.classes && Array.isArray(apiResponse.classes)) {
+            let locationClassCount = 0;
 
-        this.logProgress(`API response received: ${apiResponse.classes?.length || 0} classes found`);
+            for (const classData of apiResponse.classes) {
+              try {
+                const fitnessClass = this.transformApiClass(classData, facilityId);
 
-        // Process classes from API response
-        if (apiResponse.classes && Array.isArray(apiResponse.classes)) {
-          for (const classData of apiResponse.classes) {
-            try {
-              const fitnessClass = this.transformApiClass(classData, facilityId);
+                if (fitnessClass && this.validateClass(fitnessClass)) {
+                  classes.push(fitnessClass);
+                  locationClassCount++;
 
-              if (fitnessClass && this.validateClass(fitnessClass)) {
-                classes.push(fitnessClass);
-                this.logProgress(`Scraped: ${fitnessClass.name} on ${new Date(fitnessClass.datetime).toLocaleString()}`);
-
-                // Check max results limit
-                if (options.maxResults && classes.length >= options.maxResults) {
-                  this.logProgress(`Reached max results limit: ${options.maxResults}`);
-                  break;
+                  // Check max results limit
+                  if (options.maxResults && classes.length >= options.maxResults) {
+                    this.logProgress(`Reached max results limit: ${options.maxResults}`);
+                    break;
+                  }
                 }
+              } catch (error) {
+                const errorMsg = `[${location.name}] Error processing class: ${error}`;
+                this.logError(errorMsg);
+                errors.push(errorMsg);
               }
-            } catch (error) {
-              const errorMsg = `Error processing class: ${error}`;
-              this.logError(errorMsg);
-              errors.push(errorMsg);
             }
+
+            this.logProgress(`[${location.name}] Successfully scraped ${locationClassCount} classes`);
+          } else {
+            const errorMsg = `[${location.name}] Invalid API response format`;
+            this.logError(errorMsg);
+            errors.push(errorMsg);
           }
-        } else {
-          const errorMsg = 'Invalid API response format';
+
+          // Break outer loop if max results reached
+          if (options.maxResults && classes.length >= options.maxResults) {
+            break;
+          }
+
+        } catch (error) {
+          const errorMsg = `[${location.name}] Scraping failed: ${error}`;
           this.logError(errorMsg);
           errors.push(errorMsg);
         }
-
-        this.logProgress(`Equinox scrape complete. Found ${classes.length} valid classes`);
-
-      } finally {
-        await this.chromeManager.closePage(page);
       }
+
+      this.logProgress(`\nEquinox scrape complete. Total: ${classes.length} valid classes from ${facilityIdsToScrape.length} locations`);
 
     } catch (error) {
       const errorMsg = `Equinox API scraping failed: ${error}`;
       this.logError(errorMsg);
       errors.push(errorMsg);
       return this.createScrapeResult(classes, false, errors);
+    } finally {
+      if (page) {
+        await this.chromeManager.closePage(page);
+      }
     }
 
     return this.createScrapeResult(classes, true, errors);
@@ -182,13 +261,8 @@ export class EquinoxProvider extends BaseProvider {
         }
       }
 
-      // Build location data
-      const locationData = {
-        name: `Equinox - ${apiClass.studioName || 'Main Studio'}`,
-        address: 'Equinox West Georgia Street, 1131 West Georgia Street, Vancouver, BC V6E 2X5',
-        lat: 49.2826, // Vancouver Equinox coordinates
-        long: -123.1207
-      };
+      // Build location data dynamically based on facility ID
+      const locationData = this.getLocationData(facilityId, apiClass.studioName);
 
       // Extract tags from class title and description
       const tags: string[] = [];
@@ -219,7 +293,7 @@ export class EquinoxProvider extends BaseProvider {
         trainer: instructorName,
         intensity,
         price: 0, // Equinox is membership-based
-        bookingUrl: classId ? `https://www.equinox.com/groupfitness/${classId}` : `https://www.equinox.com/clubs/canada/vancouver/westgeorgiast`,
+        bookingUrl: classId ? `https://www.equinox.com/groupfitness/${classId}` : locationData.clubUrl,
         providerId: `equinox-${facilityId}-${classId || Date.now()}`,
         providerName: this.name,
         capacity,
@@ -252,6 +326,71 @@ export class EquinoxProvider extends BaseProvider {
       this.logError(`Error transforming class data: ${error}`);
       return null;
     }
+  }
+
+  /**
+   * Get location data for a facility ID
+   */
+  private getLocationData(facilityId: number, studioName?: string): any {
+    const locationMap: Record<number, any> = {
+      860: { // Vancouver
+        name: `Equinox West Georgia - ${studioName || 'Main Studio'}`,
+        address: '1131 West Georgia Street, Vancouver, BC V6E 2X5',
+        lat: 49.2826,
+        long: -123.1207,
+        clubUrl: 'https://www.equinox.com/clubs/canada/vancouver/westgeorgiast'
+      },
+      138: { // NYC Hudson Yards
+        name: `Equinox Hudson Yards - ${studioName || 'Main Studio'}`,
+        address: '32 Hudson Yards, New York, NY 10001',
+        lat: 40.7538,
+        long: -74.0010,
+        clubUrl: 'https://www.equinox.com/clubs/new-york/midtown/hudsonyards'
+      },
+      113: { // NYC Columbus Circle
+        name: `Equinox Columbus Circle - ${studioName || 'Main Studio'}`,
+        address: '10 Columbus Circle, New York, NY 10019',
+        lat: 40.7681,
+        long: -73.9819,
+        clubUrl: 'https://www.equinox.com/clubs/new-york/uptown/columbuscircle'
+      },
+      713: { // LA Sports Club
+        name: `Equinox Sports Club LA - ${studioName || 'Main Studio'}`,
+        address: '1835 Sepulveda Boulevard, Los Angeles, CA 90025',
+        lat: 34.0522,
+        long: -118.4437,
+        clubUrl: 'https://www.equinox.com/clubs/southern-california/los-angeles/losangeles'
+      },
+      724: { // SF Sports Club
+        name: `Equinox Sports Club SF - ${studioName || 'Main Studio'}`,
+        address: '747 Market Street, San Francisco, CA 94103',
+        lat: 37.7861,
+        long: -122.4047,
+        clubUrl: 'https://www.equinox.com/clubs/northern-california/sportsclubsanfrancisco'
+      },
+      401: { // Chicago Lincoln Park
+        name: `Equinox Lincoln Park - ${studioName || 'Main Studio'}`,
+        address: '1750 North Clark Street, Chicago, IL 60614',
+        lat: 41.9139,
+        long: -87.6340,
+        clubUrl: 'https://www.equinox.com/clubs/chicago/lincolnpark'
+      },
+      304: { // Miami Brickell
+        name: `Equinox Brickell - ${studioName || 'Main Studio'}`,
+        address: '1441 Brickell Avenue, Miami, FL 33131',
+        lat: 25.7617,
+        long: -80.1918,
+        clubUrl: 'https://www.equinox.com/clubs/florida/brickell'
+      }
+    };
+
+    return locationMap[facilityId] || {
+      name: `Equinox - ${studioName || 'Main Studio'}`,
+      address: 'Equinox Location',
+      lat: 0,
+      long: 0,
+      clubUrl: 'https://www.equinox.com'
+    };
   }
 
   /**
