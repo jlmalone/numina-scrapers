@@ -61,6 +61,12 @@
       "baseUrl": "https://www.lafitness.com",
       "defaultLocation": "new-york",
       "rateLimit": 10
+    },
+    "goldsgym": {
+      "enabled": true,
+      "baseUrl": "https://www.goldsgym.com",
+      "defaultLocation": "arcadia-santa-anita",
+      "rateLimit": 10
     }
   },
   "scraping": {
