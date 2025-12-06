@@ -15,6 +15,7 @@ import { CorePowerYogaProvider } from './providers/CorePowerYogaProvider.js';
 import { F45Provider } from './providers/F45Provider.js';
 import { PlanetFitnessProvider } from './providers/PlanetFitnessProvider.js';
 import { LAFitnessProvider } from './providers/LAFitnessProvider.js';
+import { TwentyFourHourFitnessProvider } from './providers/TwentyFourHourFitnessProvider.js';
 import { BaseProvider } from './providers/BaseProvider.js';
 import { logger } from './utils/logger.js';
 import { ScrapeOptions } from './models/FitnessClass.js';
@@ -59,6 +60,7 @@ function initializeProviders(): void {
   const f45Config = config.providers?.f45 || { enabled: true, baseUrl: 'https://f45training.com' };
   const planetfitnessConfig = config.providers?.planetfitness || { enabled: true, baseUrl: 'https://www.planetfitness.com' };
   const lafitnessConfig = config.providers?.lafitness || { enabled: true, baseUrl: 'https://www.lafitness.com' };
+  const twentyfourfitnessConfig = config.providers?.['24hourfitness'] || { enabled: true, baseUrl: 'https://www.24hourfitness.com' };
 
   providers.set('mindbody', new MindbodyProvider(chromeManager, mindbodyConfig));
   providers.set('equinox', new EquinoxProvider(chromeManager, equinoxConfig));
@@ -70,6 +72,7 @@ function initializeProviders(): void {
   providers.set('f45', new F45Provider(chromeManager, f45Config));
   providers.set('planetfitness', new PlanetFitnessProvider(chromeManager, planetfitnessConfig));
   providers.set('lafitness', new LAFitnessProvider(chromeManager, lafitnessConfig));
+  providers.set('24hourfitness', new TwentyFourHourFitnessProvider(chromeManager, twentyfourfitnessConfig));
 
   logger.info(`Initialized ${providers.size} providers`);
 }
@@ -86,7 +89,7 @@ program
 program
   .command('scrape')
   .description('Scrape classes from a provider')
-  .option('-p, --provider <name>', 'Provider name (mindbody, equinox, classpass, soulcycle, barrys, orangetheory, corepoweryoga, f45, planetfitness, lafitness, or all)')
+  .option('-p, --provider <name>', 'Provider name (mindbody, equinox, classpass, soulcycle, barrys, orangetheory, corepoweryoga, f45, planetfitness, lafitness, 24hourfitness, or all)')
   .option('-l, --location <location>', 'Location to search')
   .option('-s, --start-date <date>', 'Start date (YYYY-MM-DD)')
   .option('-e, --end-date <date>', 'End date (YYYY-MM-DD)')
