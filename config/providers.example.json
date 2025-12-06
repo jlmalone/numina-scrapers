@@ -61,6 +61,12 @@
       "baseUrl": "https://www.lafitness.com",
       "defaultLocation": "new-york",
       "rateLimit": 10
+    },
+    "24hourfitness": {
+      "enabled": true,
+      "baseUrl": "https://www.24hourfitness.com",
+      "defaultLocation": "New York, NY",
+      "rateLimit": 10
     }
   },
   "scraping": {
