@@ -1,0 +1,80 @@
+{
+  "sessions": [
+    {
+      "index": 0,
+      "html": "\n      We're sorry, there are no more classes today.\n    ",
+      "classes": "bw-session bw-session--empty",
+      "extracted": {
+        "bw-session__name": "NOT FOUND",
+        "bw-session__time": "NOT FOUND",
+        "bw-session__staff": "NOT FOUND",
+        "bw-session__duration": "NOT FOUND",
+        "bw-session__availability": "NOT FOUND",
+        "bw-session__spots": "NOT FOUND",
+        "bw-widget__cta": "NOT FOUND",
+        "bw-session__description": "NOT FOUND"
+      }
+    },
+    {
+      "index": 1,
+      "html": "\n  <div class=\"bw-session__basics\">\n    <div class=\"bw-session__info\">\n\n      <div class=\"bw-session__time\">\n        <div class=\"bw-session__column\">\n          <span class=\"hc_time\"><time class=\"hc_starttime\" datetime=\"2025-11-25T06:00\"> 6:00 AM</time> – <time class=\"hc_endtime\" datetime=\"2025-11-25T07:00\"> 7:00 AM</time> PST</span>\n        </div>\n        <button type=\"button\" class=\"bw-session__detail-link \">\n          <svg class=\"bw-i-chevron\"><use xlink:href=\"#chevron\"></use></svg>\n          ",
+      "classes": "bw-session",
+      "extracted": {
+        "bw-session__name": "Hot 26+2 - GOOD Hot 26+2",
+        "bw-session__time": "6:00 AM –  7:00 AM PST\n        \n        \n          \n          View details\n          Hide details",
+        "bw-session__staff": "Shelie Herman",
+        "bw-session__duration": "NOT FOUND",
+        "bw-session__availability": "",
+        "bw-session__spots": "NOT FOUND",
+        "bw-widget__cta": "Book",
+        "bw-session__description": "Heal your body from the inside out with the traditional Bikram Yoga Hot 26+2 class, the original hot yoga series. A non-vinyasa and static based set sequence practiced in a heated room focused on increasing the flexibility of the spine and improving the overall health of the body and mind. Room temp is 105 degrees. All levels welcome"
+      }
+    },
+    {
+      "index": 2,
+      "html": "\n  <div class=\"bw-session__basics\">\n    <div class=\"bw-session__info\">\n\n      <div class=\"bw-session__time\">\n        <div class=\"bw-session__column\">\n          <span class=\"hc_time\"><time class=\"hc_starttime\" datetime=\"2025-11-25T09:00\"> 9:00 AM</time> – <time class=\"hc_endtime\" datetime=\"2025-11-25T10:00\">10:00 AM</time> PST</span>\n        </div>\n        <button type=\"button\" class=\"bw-session__detail-link \">\n          <svg class=\"bw-i-chevron\"><use xlink:href=\"#chevron\"></use></svg>\n          ",
+      "classes": "bw-session",
+      "extracted": {
+        "bw-session__name": "Hot Vinyasa - GOOD Hot Vinyasa",
+        "bw-session__time": "9:00 AM – 10:00 AM PST\n        \n        \n          \n          View details\n          Hide details",
+        "bw-session__staff": "Danielle Mika- Nagel",
+        "bw-session__duration": "NOT FOUND",
+        "bw-session__availability": "",
+        "bw-session__spots": "NOT FOUND",
+        "bw-widget__cta": "Book",
+        "bw-session__description": "A dynamic practice focused on moving the body along with the breath.  Sequencing of each class is unique to each class/teacher. Some preparations for inversions and Level 2 postures may be introduced, with options for Level 1 students to ease the transition from Level 1 to Level 2 classes. Be prepared to sweat and move. The room temp is 95 degrees. Suitable for students with some yoga experience looking to have an invigorating and dynamic experience."
+      }
+    },
+    {
+      "index": 3,
+      "html": "\n  <div class=\"bw-session__basics\">\n    <div class=\"bw-session__info\">\n\n      <div class=\"bw-session__time\">\n        <div class=\"bw-session__column\">\n          <span class=\"hc_time\"><time class=\"hc_starttime\" datetime=\"2025-11-25T12:00\">12:00 PM</time> – <time class=\"hc_endtime\" datetime=\"2025-11-25T13:00\"> 1:00 PM</time> PST</span>\n        </div>\n        <button type=\"button\" class=\"bw-session__detail-link \">\n          <svg class=\"bw-i-chevron\"><use xlink:href=\"#chevron\"></use></svg>\n          ",
+      "classes": "bw-session",
+      "extracted": {
+        "bw-session__name": "Hot 26+2 - GOOD Hot 26+2",
+        "bw-session__time": "12:00 PM –  1:00 PM PST\n        \n        \n          \n          View details\n          Hide details",
+        "bw-session__staff": "Julie Mahan",
+        "bw-session__duration": "NOT FOUND",
+        "bw-session__availability": "",
+        "bw-session__spots": "NOT FOUND",
+        "bw-widget__cta": "Book",
+        "bw-session__description": "Heal your body from the inside out with the traditional Bikram Yoga Hot 26+2 class, the original hot yoga series. A non-vinyasa and static based set sequence practiced in a heated room focused on increasing the flexibility of the spine and improving the overall health of the body and mind. Room temp is 105 degrees. All levels welcome"
+      }
+    },
+    {
+      "index": 4,
+      "html": "\n  <div class=\"bw-session__basics\">\n    <div class=\"bw-session__info\">\n\n      <div class=\"bw-session__time\">\n        <div class=\"bw-session__column\">\n          <span class=\"hc_time\"><time class=\"hc_starttime\" datetime=\"2025-11-25T17:30\"> 5:30 PM</time> – <time class=\"hc_endtime\" datetime=\"2025-11-25T18:30\"> 6:30 PM</time> PST</span>\n        </div>\n        <button type=\"button\" class=\"bw-session__detail-link \">\n          <svg class=\"bw-i-chevron\"><use xlink:href=\"#chevron\"></use></svg>\n          ",
+      "classes": "bw-session",
+      "extracted": {
+        "bw-session__name": "Hot Vinyasa - GOOD Hot Vinyasa",
+        "bw-session__time": "5:30 PM –  6:30 PM PST\n        \n        \n          \n          View details\n          Hide details",
+        "bw-session__staff": "Jade Rieves",
+        "bw-session__duration": "NOT FOUND",
+        "bw-session__availability": "",
+        "bw-session__spots": "NOT FOUND",
+        "bw-widget__cta": "Book",
+        "bw-session__description": "A dynamic practice focused on moving the body along with the breath.  Sequencing of each class is unique to each class/teacher. Some preparations for inversions and Level 2 postures may be introduced, with options for Level 1 students to ease the transition from Level 1 to Level 2 classes. Be prepared to sweat and move. The room temp is 95 degrees. Suitable for students with some yoga experience looking to have an invigorating and dynamic experience."
+      }
+    }
+  ],
+  "totalFound": 21
+}

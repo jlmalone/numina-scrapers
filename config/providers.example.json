@@ -67,6 +67,12 @@
       "baseUrl": "https://www.24hourfitness.com",
       "defaultLocation": "New York, NY",
       "rateLimit": 10
+    },
+    "goldsgym": {
+      "enabled": true,
+      "baseUrl": "https://www.goldsgym.com",
+      "defaultLocation": "arcadia-santa-anita",
+      "rateLimit": 10
     }
   },
   "scraping": {
